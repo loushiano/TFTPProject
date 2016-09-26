@@ -41,14 +41,12 @@ public class Client {
     * @param type Type of request - Read/Write/Invalid
     * @param iteration Current iteration Number.
     */
-   public void sendAndReceive(byte type, int iteration)
+   public void sendAndReceive(String reqType,String filepath,String vqMode,String tnMode)
    {
       // Prepare a DatagramPacket and send it via sendReceiveSocket
       // to port 23 on the destination host.
 	   
-	   if (type == READ) System.out.println("Sending READ request..");
-	   if (type == WRITE) System.out.println("Sending WRITE request..");
-	   if (type == INVALID) System.out.println("Sending INVALID request..");
+	  
 	   
 	   String fileName = "testFile.txt";
 	   byte[] fileNameBinary = fileName.getBytes();
@@ -60,7 +58,7 @@ public class Client {
 	                     + 1];
 	   
 	   request[0] = 0;
-	   request[1] = type;
+	   request[1] = 2;
 	   
 	   int j = 0;
 	   //Store bytes of fileName in the request array
@@ -181,7 +179,7 @@ public class Client {
     	  else if (i%2 == 0) type = READ; //Read request for even iterations
     	  else if (i%2 != 0) type = WRITE; //Write request for odd iterations
     	  
-    	  c.sendAndReceive(type, i);
+    	  c.sendAndReceive("rrq","text.txt","verbose","test");
       }
    }
 }
