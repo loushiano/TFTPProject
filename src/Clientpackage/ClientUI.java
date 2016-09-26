@@ -23,6 +23,8 @@ public class ClientUI {
 	                	System.out.println("Sending a read request.");
 	                    
 	                }
+	                
+	                //Adding a test commit comment
 	                if ("q".equals(input)) {
 	                    System.out.println("Exit!");
 	                    System.exit(0);
