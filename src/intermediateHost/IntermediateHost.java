@@ -70,7 +70,7 @@ public class IntermediateHost {
 		      String received = new String(data,0,len);   
 		      System.out.println(received + "\n");
 		      System.out.println("Containing Bytes: ");
-		      System.out.println(Arrays.toString(Utility.getBytes(data, len)));
+		      System.out.println(Arrays.toString(Utility.getBytes(data,0, len)));
 		      
 		      // Slow things down (wait 5 seconds)
 		      try {
@@ -98,7 +98,7 @@ public class IntermediateHost {
 		      System.out.print("Containing: ");
 		      System.out.println(new String(sendPacket.getData(),0,len));
 		      System.out.println("Containing Bytes: ");
-		      System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(), len)));
+		      System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(),0, len)));
 		      // Send the datagram packet to the client via the send socket. 
 		      try {
 		         sendReceiveSocket.send(sendPacket);
@@ -142,7 +142,7 @@ public class IntermediateHost {
 		      received = new String(data,0,len);   
 		      System.out.println(received + "\n");
 		      System.out.println("Containing Bytes: ");
-		      System.out.println(Arrays.toString(Utility.getBytes(data, len)));
+		      System.out.println(Arrays.toString(Utility.getBytes(data,0, len)));
 		      
 		      // Slow things down (wait 5 seconds)
 		      try {
@@ -173,7 +173,7 @@ public class IntermediateHost {
 			      System.out.print("Containing: ");
 			      System.out.println(new String(sendPacket.getData(),0,len));
 			      System.out.println("Containing Bytes: ");
-			      System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(), len)));
+			      System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(),0, len)));
 			      // Send the datagram packet to the client via the send socket. 
 			      try {
 			    	  sendToClientSocket = new DatagramSocket();

@@ -10,6 +10,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Arrays;
 
+import utilities.Constants;
 import utilities.Utility;
 
 public class Server {
@@ -17,6 +18,7 @@ public class Server {
 	DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket;
 	private boolean isReadRequest, isWriteRequest;
+	
 	
 	
 	public Server()
@@ -49,11 +51,14 @@ public class Server {
 	 */
 	public void receiveAndRespond() throws Exception
 	{
-
+			String filepath=null;
 		for (;;){
 		
 			 byte data[] = new byte[100];
 				receivePacket = new DatagramPacket(data, data.length);
+				if(Utility.shutDown){
+					System.exit(1);
+				}
 				System.out.println("Server: Waiting for Packet.\n");
 
 				// Block until a datagram packet is received from receiveSocket.
@@ -66,17 +71,36 @@ public class Server {
 					e.printStackTrace();
 					System.exit(1);
 				}
-				
-				ConnectionManager connectionManagerThread = new ConnectionManager(receiveSocket, receivePacket, data);
+					filepath=getPath(receivePacket.getData());
+					
+				ConnectionManager connectionManagerThread = new ConnectionManager(receiveSocket, receivePacket, data,filepath);
 				connectionManagerThread.start();
 		}
 	}
 
 
 
+	private String getPath(byte[] data) {
+		byte stringForm[]=new byte[100];
+		int j=0;
+		for(int i=2;i<100;i++){
+			if(data[i]==0){
+				break;
+			} 
+			stringForm[j]=data[i];
+			j++;
+			
+		}
+		byte stringForm2[]=new byte[j];
+		System.arraycopy(stringForm, 0,stringForm2,0,j);
+		return new String(stringForm2,0,j);
+	}
+
 	public static void main( String args[] )
 	{
 		Server c = new Server();
+		Thread su=new ServerUI();
+		su.start();
 		try {
 			c.receiveAndRespond();
 		} catch (Exception e) {
@@ -85,3 +109,72 @@ public class Server {
 		}
 	}
 }
+	class ServerUI extends Thread
+	{
+	    /**
+	     * The text area where this thread's output will be displayed.
+	     */
+	    
+
+	    public ServerUI() {
+	      
+	    }
+
+	    public void run() {
+	    	 BufferedReader br = null;
+	    	 String mode=Constants.VERBOSE;
+	    	 try{
+	    		 br = new BufferedReader(new InputStreamReader(System.in));
+	    	 while (true) {
+
+	            	System.out.println("Default Mode is " + Constants.VERBOSE);
+	            	System.out.println();
+	            	System.out.println("Type help for a list of available commands.");
+	            	System.out.println();
+	                System.out.println("Enter command: ");
+	                String input = br.readLine();
+	                if (input.equals("help")){
+	                	System.out.println();
+	                	System.out.println("List of Commands:");
+	                	System.out.println("mode - Display the current mode (verbose/quiet)");
+	                	System.out.println("changeMode - Change the mode (verbose/quiet)");
+	                	System.out.println("shutdown - Shut down Server");
+	                	System.out.println();
+	                }else if (input.equals("mode")) {
+	                	System.out.println("Current mode: " +mode );
+	                	System.out.println();
+	                }else if (input.equals("change mode")){
+	                	System.out.print("Set mode (verbose/quiet): ");
+	                    input = br.readLine();
+	                    while (!(input.equals(Constants.VERBOSE) || (input.equals(Constants.QUIET)))){
+	                		System.out.print("Please enter correct mode (verbose or quiet): ");
+		                	input = br.readLine();
+	                	}
+	                    
+	                    mode = input;
+	                    System.out.println("Mode set to " + input);
+	                    System.out.println();
+	                    
+	                }
+	                else if(input.equals("shut down")){
+	                	Utility.shutDown=true;
+	                }else{
+	                	System.out.println("Command not recognized. Please try again.");
+	                }
+	    	 }
+	    	 } catch (IOException e) {
+		            e.printStackTrace();
+		        } finally {
+		            if (br != null) {
+		                try {
+		                    br.close();
+		                } catch (IOException e) {
+		                    e.printStackTrace();
+		                }
+		            }
+		        }
+	                }
+	                
+	    }
+	
+

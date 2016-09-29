@@ -14,6 +14,7 @@ import java.util.Arrays;
 import utilities.Utility;
 
 public class ConnectionManager extends Thread{
+	private String filepath;
 	private DatagramPacket receivePacket, sendPacket;
 	private DatagramSocket sendReceiveSocket, receiveSocket;
 	private byte[] data;
@@ -21,10 +22,10 @@ public class ConnectionManager extends Thread{
 	private boolean isReadRequest, isWriteRequest;
 	String filePath;
 	
-	public ConnectionManager(DatagramSocket receiveSocket, DatagramPacket receivedPacket, byte[] data ){
+	public ConnectionManager(DatagramSocket receiveSocket, DatagramPacket receivedPacket, byte[] data,String filepath ){
 		this.receivePacket = receivedPacket;
 		this.receiveSocket = receiveSocket;
-		
+		this.filepath=filepath;
 		try {
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e) {
@@ -48,7 +49,7 @@ public class ConnectionManager extends Thread{
 					String received = new String(data,0,len);   
 					System.out.println(received + "\n");
 					System.out.print("Containing Bytes: ");
-				    System.out.println(Arrays.toString(Utility.getBytes(receivePacket.getData(), len)));
+				    System.out.println(Arrays.toString(Utility.getBytes(receivePacket.getData(),0, len)));
 				    
 				    
 				    //Validate Request
@@ -117,7 +118,7 @@ public class ConnectionManager extends Thread{
 						responseData[3] = 1;
 						BufferedInputStream in = null;
 						try {
-							in = new BufferedInputStream(new FileInputStream("C:/Users/Iman/Desktop/workspace/Sysc3303/src/serverPackage/in.dat.txt"));
+							in = new BufferedInputStream(new FileInputStream(filepath));
 						} catch (FileNotFoundException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -139,7 +140,6 @@ public class ConnectionManager extends Thread{
 										System.arraycopy(data1,0,responseData,4,data1.length);
 										sendPacket = new DatagramPacket(responseData, responseData.length,
 												receivePacket.getAddress(), receivePacket.getPort());
-
 										System.out.println( "Server: Sending packet:");
 										System.out.println("To host: " + sendPacket.getAddress());
 										System.out.println("Destination host port: " + sendPacket.getPort());
@@ -148,7 +148,7 @@ public class ConnectionManager extends Thread{
 										System.out.print("Containing: ");
 										System.out.println(new String(sendPacket.getData(),0,len));
 										System.out.print("Containing Bytes: ");
-									    System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(), len)));
+									    System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(),0, len)));
 									    
 									    //send data
 									    try {
@@ -158,7 +158,7 @@ public class ConnectionManager extends Thread{
 											System.exit(1);
 										}
 
-										
+										System.out.println("data sent");
 										//get acknowledge
 									    try {
 											sendReceiveSocket.receive(receivePacketACK);
@@ -178,7 +178,7 @@ public class ConnectionManager extends Thread{
 										received = new String(data,0,len);   
 										System.out.println(received + "\n");
 										System.out.print("Containing Bytes: ");
-									    System.out.println(Arrays.toString(Utility.getBytes(receivePacketACK.getData(), len)));
+									    System.out.println(Arrays.toString(Utility.getBytes(receivePacketACK.getData(),0, len)));
 										
 										
 										
@@ -239,7 +239,7 @@ public class ConnectionManager extends Thread{
 								System.out.print("Containing: ");
 								System.out.println(new String(sendPacketACK.getData(),0,len));
 								System.out.print("Containing Bytes: ");
-							    System.out.println(Arrays.toString(Utility.getBytes(sendPacketACK.getData(), len)));
+							    System.out.println(Arrays.toString(Utility.getBytes(sendPacketACK.getData(),0, len)));
 								
 							    
 							    if(receivePacketDATA.getLength()<516){
@@ -265,7 +265,7 @@ public class ConnectionManager extends Thread{
 								received = new String(data,0,len);   
 								System.out.println(received + "\n");
 								System.out.print("Containing Bytes: ");
-								System.out.println(Arrays.toString(Utility.getBytes(receivePacketDATA.getData(), len)));	
+								System.out.println(Arrays.toString(Utility.getBytes(receivePacketDATA.getData(),0, len)));	
 								
 								try {
 									out.write(DATA,4,512);
