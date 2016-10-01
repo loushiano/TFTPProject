@@ -14,6 +14,9 @@ import java.util.Arrays;
 import utilities.Constants;
 import utilities.Utility;
 
+/*
+ * This thread is created for every client-connection. It takes care of the server-client transaction.
+ */
 public class ConnectionManager extends Thread{
 	private String filepath;
 	private DatagramPacket receivePacket, sendPacket;
@@ -81,9 +84,9 @@ public class ConnectionManager extends Thread{
 			} 
 		}
 
-		//Slow things down (wait 5 seconds)
+		//Slow things down (wait 1.5 seconds)
 		try {
-			Thread.sleep(2500);
+			Thread.sleep(1500);
 		} catch (InterruptedException e ) {
 			e.printStackTrace();
 			System.exit(1);

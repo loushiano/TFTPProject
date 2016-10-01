@@ -6,6 +6,11 @@ import java.io.InputStreamReader;
 
 import utilities.Constants;
 
+/*
+ * Author: Sahaj Arora
+ * This class provides user interface for a client to interact with the system.
+ */
+
 public class ClientUI {
 	static Client c = new Client();
 	
@@ -30,7 +35,7 @@ public class ClientUI {
 	                System.out.print("Enter command: ");
 	                String input = br.readLine();
 	                
-	                if (input.equals("help")){
+	                if (input.equals(Constants.CMD_HELP)){
 	                	System.out.println();
 	                	System.out.println("List of Commands:");
 	                	System.out.println("wrq - Send a write request");
@@ -41,12 +46,12 @@ public class ClientUI {
 	                	System.out.println();
 	                }
 	                
-	                else if (input.equals("mode")) {
+	                else if (input.equals(Constants.CMD_MODE)) {
 	                	System.out.println("Current mode: " + tnMode);
 	                	System.out.println();
 	                }
 	                
-	                else if (input.equals("changeMode")){
+	                else if (input.equals(Constants.CMD_CHANGE_MODE)){
 	                	System.out.print("Set mode (normal/test): ");
 	                    input = br.readLine();
 	                    while (!(input.equals(Constants.NORMAL) || (input.equals(Constants.TEST)))){
@@ -60,7 +65,7 @@ public class ClientUI {
 	                    
 	                }
 	                
-	                else if (input.equals("rrq") ){	                	
+	                else if (input.equals(Constants.CMD_RRQ) ){	                	
 	                	
 	                	requestType = Constants.READ_REQUEST;
 	                		
@@ -84,7 +89,7 @@ public class ClientUI {
 	                	c.sendAndReceive(requestType, filePath,filewritepath, vqMode, tnMode);
 	                	
 	                    
-	                } else if(input.equals("wrq")){
+	                } else if(input.equals(Constants.CMD_WRQ)){
 	                	requestType = Constants.WRITE_REQUEST;
 	                	System.out.print("Enter file path to read from: ");
 	                	input = br.readLine();
@@ -111,8 +116,8 @@ public class ClientUI {
 	                	
 	                }
 	                
-	                //Adding a test commit comment
-	                else if ("shutdown".equals(input)) {
+	                
+	                else if (Constants.CMD_SHUTDOWN.equals(input)) {
 	                    System.out.println("Client shut down.");
 	                    System.exit(0);
 	                }

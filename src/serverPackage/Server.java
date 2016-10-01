@@ -8,8 +8,6 @@ package serverPackage;
 
 import java.io.*;
 import java.net.*;
-import java.util.Arrays;
-
 import utilities.Constants;
 import utilities.Utility;
 
@@ -19,6 +17,7 @@ public class Server {
 	DatagramSocket sendSocket, receiveSocket;
 	private boolean isReadRequest, isWriteRequest;
 	public static String mode=Constants.VERBOSE;
+
 	
 	
 	
@@ -60,11 +59,11 @@ public class Server {
 				if(Utility.shutDown){
 					System.exit(1);
 				}
-				System.out.println("Server: Waiting for Packet.\n");
+				//System.out.println("Server: Waiting for Packet.\n");
 
 				// Block until a datagram packet is received from receiveSocket.
 				try {        
-					System.out.println("Waiting..."); // so we know we're waiting
+					//System.out.println("Waiting..."); // so we know we're waiting
 					receiveSocket.receive(receivePacket);
 				} catch (IOException e) {
 					System.out.print("IO Exception: likely:");
@@ -110,6 +109,10 @@ public class Server {
 		}
 	}
 }
+
+	/*
+	 * This class provides user interface for the server administrator to interact with the system.
+	 */
 	class ServerUI extends Thread
 	{
 	    /**
@@ -134,18 +137,18 @@ public class Server {
 	            	System.out.println();
 	                System.out.println("Enter command: ");
 	                String input = br.readLine();
-	                if (input.equals("help")){
+	                if (input.equals(Constants.CMD_HELP)){
 	                	System.out.println();
 	                	System.out.println("List of Commands:");
 	                	System.out.println("mode - Display the current mode (verbose/quiet)");
 	                	System.out.println("changeMode - Change the mode (verbose/quiet)");
 	                	System.out.println("shutdown - Shut down Server");
 	                	System.out.println();
-	                }else if (input.equals("mode")) {
+	                }else if (input.equals(Constants.CMD_MODE)) {
 	                	System.out.println("Current mode: " +mode );
 	                	System.out.println();
-	                }else if (input.equals("change mode")){
-	                	System.out.print("Set mode (verbose/quiet): ");
+	                }else if (input.equals(Constants.CMD_CHANGE_MODE)){
+	                	System.out.print("Set logging mode (verbose/quiet): ");
 	                    input = br.readLine();
 	                    while (!(input.equals(Constants.VERBOSE) || (input.equals(Constants.QUIET)))){
 	                		System.out.print("Please enter correct mode (verbose or quiet): ");
@@ -158,8 +161,10 @@ public class Server {
 	                    System.out.println();
 	                    
 	                }
-	                else if(input.equals("shut down")){
+	                else if(input.equals(Constants.CMD_SHUTDOWN)){
 	                	Utility.shutDown=true;
+	                	//System.out.println("Server shut down");
+	                	//System.exit(0);
 	                }else{
 	                	System.out.println("Command not recognized. Please try again.");
 	                }
