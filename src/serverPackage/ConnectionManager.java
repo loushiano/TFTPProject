@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Arrays;
 
+import utilities.Constants;
 import utilities.Utility;
 
 public class ConnectionManager extends Thread{
@@ -21,11 +22,16 @@ public class ConnectionManager extends Thread{
 	public static final byte READ = 1, WRITE = 2;
 	private boolean isReadRequest, isWriteRequest;
 	String filePath;
-
-	public ConnectionManager(DatagramSocket receiveSocket, DatagramPacket receivedPacket, byte[] data,String filepath ){
+	boolean flag=true;
+	byte[] opblock = new byte[4];
+	public String mode;
+	public int len;
+	public String received;
+	public ConnectionManager(DatagramSocket receiveSocket, DatagramPacket receivedPacket, byte[] data,String filepath,String mode ){
 		this.receivePacket = receivedPacket;
 		this.receiveSocket = receiveSocket;
 		this.filepath=filepath;
+		this.mode=mode;
 		try {
 			sendReceiveSocket = new DatagramSocket();
 		} catch (SocketException e) {
@@ -38,7 +44,9 @@ public class ConnectionManager extends Thread{
 	public void run(){
 		// Process the received datagram.
 
-		System.out.println("Server: Packet received:");
+		System.out.println("Server: request received:");
+		if(mode.equals(Constants.VERBOSE)){
+			
 		System.out.println("From host: " + receivePacket.getAddress());
 		System.out.println("Host port: " + receivePacket.getPort());
 		int len = receivePacket.getLength();
@@ -50,7 +58,7 @@ public class ConnectionManager extends Thread{
 		System.out.println(received + "\n");
 		System.out.print("Containing Bytes: ");
 		System.out.println(Arrays.toString(Utility.getBytes(receivePacket.getData(),0, len)));
-
+		}
 
 		//Validate Request
 		if (isValidRequest(data)){
@@ -73,7 +81,7 @@ public class ConnectionManager extends Thread{
 			} 
 		}
 
-		// Slow things down (wait 5 seconds)
+		//Slow things down (wait 5 seconds)
 		try {
 			Thread.sleep(2500);
 		} catch (InterruptedException e ) {
@@ -115,7 +123,7 @@ public class ConnectionManager extends Thread{
 			responseData[0] = 0;
 			responseData[1] = 3;
 			responseData[2] = 0;
-			responseData[3] = 1;
+			responseData[3] = 0;
 			BufferedInputStream in = null;
 			try {
 				in = new BufferedInputStream(new FileInputStream(filepath));
@@ -127,7 +135,7 @@ public class ConnectionManager extends Thread{
 
 			byte[] data1 = new byte[512];
 			byte[] ACK = new byte[4];
-			DatagramPacket receivePacketACK = new DatagramPacket(ACK, ACK.length);
+			
 			int n;
 
 			/* Read the file in 512 byte chunks. */
@@ -138,28 +146,36 @@ public class ConnectionManager extends Thread{
 					 * Now write them to the output file. 
 					 */
 					System.arraycopy(data1,0,responseData,4,data1.length);
-					sendPacket = new DatagramPacket(responseData, responseData.length,
+					DatagramPacket sendPacketDATA = new DatagramPacket(responseData, responseData.length,
 							receivePacket.getAddress(), receivePacket.getPort());
-					System.out.println( "Server: Sending packet:");
-					System.out.println("To host: " + sendPacket.getAddress());
-					System.out.println("Destination host port: " + sendPacket.getPort());
-					len = sendPacket.getLength();
+					System.out.println( "Server: Sending Data:");
+					if(mode.equals(Constants.VERBOSE)){
+					System.out.println("To host: " + sendPacketDATA.getAddress());
+					System.out.println("Destination host port: " + sendPacketDATA.getPort());
+					 len = sendPacketDATA.getLength();
 					System.out.println("Length: " + len);
 					System.out.print("Containing: ");
-					System.out.println(new String(sendPacket.getData(),0,len));
+					System.out.println(new String(sendPacketDATA.getData(),0,len));
 					System.out.print("Containing Bytes: ");
-					System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(),0, len)));
-
+					System.out.println("opcode: "+Arrays.toString(Utility.getBytes(sendPacketDATA.getData(),0,2)));
+					
+					System.arraycopy(responseData,0,opblock,0,4);
+					System.out.println("block#: "+Utility.increment(opblock));
+					System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacketDATA.getData(),4,len)));
+					}
+					DatagramPacket receivePacketACK = new DatagramPacket(ACK, ACK.length);
 					//send data
+					System.arraycopy(opblock,0,responseData,0,4);
 					try {
-						sendReceiveSocket.send(sendPacket);
+						sendReceiveSocket.send(sendPacketDATA);
 					} catch (IOException e) {
 						e.printStackTrace();
 						System.exit(1);
 					}
-
-					System.out.println("data sent");
+						
+					System.out.println("data has been sent");
 					//get acknowledge
+					
 					try {
 						sendReceiveSocket.receive(receivePacketACK);
 					} catch (IOException e) {
@@ -167,7 +183,8 @@ public class ConnectionManager extends Thread{
 						System.exit(1);
 					}
 
-					System.out.println("Server: Packet received:");
+					System.out.println("Server: Acknowledgement received:");
+					if(mode.equals(Constants.VERBOSE)){
 					System.out.println("From host: " + receivePacketACK.getAddress());
 					System.out.println("Host port: " + receivePacketACK.getPort());
 					len = receivePacketACK.getLength();
@@ -178,8 +195,10 @@ public class ConnectionManager extends Thread{
 					received = new String(data,0,len);   
 					System.out.println(received + "\n");
 					System.out.print("Containing Bytes: ");
-					System.out.println(Arrays.toString(Utility.getBytes(receivePacketACK.getData(),0, len)));
-
+					System.out.println("opcode: "+ Arrays.toString(Utility.getBytes(receivePacketACK.getData(),0,2)));
+					
+					System.out.println("block#: "+ Utility.getByteInt(receivePacketACK.getData()));
+					}
 
 
 
@@ -204,49 +223,59 @@ public class ConnectionManager extends Thread{
 						responseData[1] = 4;
 						responseData[2] = 0;
 						responseData[3] = 0; */
-			BufferedOutputStream out = null;
+			/*BufferedOutputStream out = null;
 			try {
-				out = new BufferedOutputStream(new FileOutputStream("E:\\test3303\\test.txt"));
+				out = new BufferedOutputStream(new FileOutputStream(filepath));
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}*/
+			BufferedOutputStream out=null;
+			 try {
+				out =
+						new BufferedOutputStream(new FileOutputStream(filepath));
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
-
 			byte[] DATA = new byte[516];
 			byte[] ACK = {0,4,0,0};
 			DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length, receivePacket.getAddress(), receivePacket.getPort());
 			DatagramPacket receivePacketDATA = new DatagramPacket(DATA, DATA.length);
 
 
+			try {
+				sendReceiveSocket.send(sendPacketACK);
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+			
+
+			System.out.println( "Server: Sent Acknowledgement:");
+			if(mode.equals(Constants.VERBOSE)){
+			System.out.println("To host: " + receivePacket.getAddress());
+			System.out.println("Destination host port: " + receivePacket.getPort());
+			len = sendPacketACK.getLength();
+			System.out.println("Length: " + len);
+			System.out.print("Containing: ");
+			System.out.println(new String(sendPacketACK.getData(),0,len));
+			System.out.print("Containing Bytes: ");
+			System.out.println("opcode: "+Arrays.toString(Utility.getBytes(sendPacketACK.getData(),0,2)));
+			System.out.println("block#: 0");
+			}
+			System.out.println("ACKNOWLEDGEMENT SENT");
 
 
-
-			for(;;){
-
+			while(flag){
 				//send ack
-				try {
-					sendReceiveSocket.send(sendPacketACK);
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.exit(1);
+				
+
+				if(Utility.containsAzero(receivePacket.getData(),4,516)){
+					flag=false;
 				}
 
-				System.out.println( "Server: Sending packet:");
-				System.out.println("To host: " + receivePacket.getAddress());
-				System.out.println("Destination host port: " + receivePacket.getPort());
-				len = sendPacketACK.getLength();
-				System.out.println("Length: " + len);
-				System.out.print("Containing: ");
-				System.out.println(new String(sendPacketACK.getData(),0,len));
-				System.out.print("Containing Bytes: ");
-				System.out.println(Arrays.toString(Utility.getBytes(sendPacketACK.getData(),0, len)));
-
-
-				if(receivePacketDATA.getLength()<516){
-					break;
-				}
-
-
+				System.out.println("now waiting for new data");
 				//get data
 				try {
 					sendReceiveSocket.receive(receivePacketDATA);
@@ -254,7 +283,8 @@ public class ConnectionManager extends Thread{
 					e.printStackTrace();
 					System.exit(1);
 				}
-				System.out.println("Server: Packet received:");
+				System.out.println("Server: Data received:");
+				if(mode.equals(Constants.VERBOSE));
 				System.out.println("From host: " + receivePacket.getAddress());
 				System.out.println("Host port: " + receivePacket.getPort());
 				len = receivePacketDATA.getLength();
@@ -262,44 +292,63 @@ public class ConnectionManager extends Thread{
 				System.out.print("Containing: " );
 
 				// Form a String from the byte array.
-				received = new String(data,0,len);   
-				System.out.println(received + "\n");
+				String received1 = new String(receivePacketDATA.getData(),0,len);   
+				System.out.println(received1 + "\n");
 				System.out.print("Containing Bytes: ");
-				System.out.println(Arrays.toString(Utility.getBytes(receivePacketDATA.getData(),0, len)));	
+				System.out.println("opcode: "+Arrays.toString(Utility.getBytes(receivePacketDATA.getData(),0,2)));
+				System.arraycopy(receivePacketDATA.getData(),0,opblock,0,4);
+				System.out.println("block#: "+Utility.getByteInt(opblock));
+				System.out.println("data: "+Arrays.toString(Utility.getBytes(receivePacketDATA.getData(),4,len)));
 
 				try {
-					out.write(DATA,4,512);
-				} catch (IOException e) {
+					out.write(receivePacketDATA.getData(), 0,receivePacketDATA.getLength());
+				} catch (IOException e1) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					e1.printStackTrace();
 				}
-
 
 				// get block number from the received block
 				ACK[2] = receivePacketDATA.getData()[2];
 				ACK[3] = receivePacketDATA.getData()[3];
-				sendPacketACK = new DatagramPacket(ACK, ACK.length);
+				sendPacketACK = new DatagramPacket(ACK, ACK.length, receivePacket.getAddress(), receivePacket.getPort());
+				
+				try {
+					sendReceiveSocket.send(sendPacketACK);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
 
+				System.out.println( "Server: Sent Acknowledgement:");
+				if(mode.equals(Constants.VERBOSE)){
+				System.out.println("To host: " + receivePacket.getAddress());
+				System.out.println("Destination host port: " + receivePacket.getPort());
+				len = sendPacketACK.getLength();
+				System.out.println("Length: " + len);
+				System.out.print("Containing: ");
+				System.out.println(new String(sendPacketACK.getData(),0,len));
+				System.out.print("Containing Bytes: ");
+				System.out.println("opcode: "+Arrays.toString(Utility.getBytes(sendPacketACK.getData(),0,2)));
+				System.out.println("block#: "+Utility.getByteInt(ACK));
+				}
+				System.out.println("ACKNOWLEDGEMENT SENT");
+			
+		}
 
+			try {
+				out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 
 			}
-			
-		
-
-		}
-
-
-
-
 	}
 
 
 
-
-
-
-
+	
 
 	/**
 	 * Validate the request

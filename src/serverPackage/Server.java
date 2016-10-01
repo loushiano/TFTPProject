@@ -18,6 +18,7 @@ public class Server {
 	DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket;
 	private boolean isReadRequest, isWriteRequest;
+	public static String mode=Constants.VERBOSE;
 	
 	
 	
@@ -73,7 +74,7 @@ public class Server {
 				}
 					filepath=getPath(receivePacket.getData());
 					
-				ConnectionManager connectionManagerThread = new ConnectionManager(receiveSocket, receivePacket, data,filepath);
+				ConnectionManager connectionManagerThread = new ConnectionManager(receiveSocket, receivePacket, data,filepath,mode);
 				connectionManagerThread.start();
 		}
 	}
@@ -152,6 +153,7 @@ public class Server {
 	                	}
 	                    
 	                    mode = input;
+	                    Server.mode=input;
 	                    System.out.println("Mode set to " + input);
 	                    System.out.println();
 	                    

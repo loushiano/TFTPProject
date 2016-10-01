@@ -18,11 +18,19 @@ public class Utility {
 	public static byte[] getBytes(byte[] data, int pos,int len) {
 		
 		 byte[] bytes = new byte[len];
+		 int j=0;
 		for (int i = pos; i<len; i++){
-			bytes[i] = data[i];
+			bytes[j] = data[i];
+			j++;
 		}
 		
 		return bytes;
+	}
+	public static boolean containsAzero(byte[] data2, int i, int j) {
+		for(int k=i;k<j;k++){
+			if(data2[k]==0) return true;
+		}
+		return false;
 	}
 	public static int increment(byte array[]){
 		int j,k,l;
@@ -57,7 +65,7 @@ public class Utility {
 		 	}
 		 	//for the number of the left we also can reach -32768 so we have to add (2^16-1) 
 		 	//so we keep counting up
-		 	if((array[2]<<8)>=-32768 && (array[2]<<88)<=0 ){
+		 	if((array[2]<<8)>=-32768 && (array[2]<<8)<0 ){
 		 		flag2=true;
 		 	}
 		 	//comment
@@ -95,7 +103,7 @@ public class Utility {
 	 	}
 	 	//for the number of the left we also can reach -32768 so we have to add (2^16-1) 
 	 	//so we keep counting up
-	 	if((array[2]<<8)>=-32768 && (array[2]<<8)<=0){
+	 	if((array[2]<<8)>=-32768 && (array[2]<<8)<0){
 	 		flag2=true;
 	 	}
 	 	//comment

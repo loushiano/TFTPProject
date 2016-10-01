@@ -13,7 +13,7 @@ public class ClientUI {
 
 	        BufferedReader br = null;
 	        
-	        String requestType = "", filePath, vqMode;
+	        String requestType = "", filePath, vqMode,filewritepath = null;
 	
 	        String tnMode = Constants.NORMAL;
 
@@ -60,10 +60,10 @@ public class ClientUI {
 	                    
 	                }
 	                
-	                else if (input.equals("rrq") || input.equals("wrq")){	                	
+	                else if (input.equals("rrq") ){	                	
 	                	
-	                	if (input.equals("rrq"))	requestType = Constants.READ_REQUEST;
-	                	else if (input.equals("wrq"))	requestType = Constants.WRITE_REQUEST;
+	                	requestType = Constants.READ_REQUEST;
+	                		
       	
 	                	System.out.print("Enter file path: ");
 	                	input = br.readLine();
@@ -81,10 +81,35 @@ public class ClientUI {
 	                	System.out.println();
 	                	
 	            
-	                	c.sendAndReceive(requestType, filePath, vqMode, tnMode);
+	                	c.sendAndReceive(requestType, filePath,filewritepath, vqMode, tnMode);
 	                	
 	                    
-	                } 
+	                } else if(input.equals("wrq")){
+	                	requestType = Constants.WRITE_REQUEST;
+	                	System.out.print("Enter file path to read from: ");
+	                	input = br.readLine();
+	                	filePath = input;
+	                	System.out.println();
+	                	System.out.print("Enter file path to write To:");
+	                	input = br.readLine();
+	                	filewritepath =input;
+	                	
+	                	System.out.println();
+	                	System.out.print("Enter mode (verbose or quiet): ");
+	                	input = br.readLine();
+	                	
+	                	while (!(input.equals(Constants.VERBOSE) || (input.equals(Constants.QUIET)))){
+	                		System.out.print("Please enter correct mode (verbose or quiet): ");
+		                	input = br.readLine();
+	                	}
+	                	
+	                	vqMode = input;
+	                	System.out.println();
+	                	
+	            
+	                	c.sendAndReceive(requestType, filePath,filewritepath, vqMode, tnMode);
+	                	
+	                }
 	                
 	                //Adding a test commit comment
 	                else if ("shutdown".equals(input)) {

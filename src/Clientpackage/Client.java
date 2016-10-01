@@ -44,7 +44,7 @@ public class Client {
 	 * @param type Type of request - Read/Write/Invalid
 	 * @param iteration Current iteration Number.
 	 */
-	public void sendAndReceive(String reqType,String filepath,String vqMode,String tnMode)
+	public void sendAndReceive(String reqType,String filepath,String filewritepath,String vqMode,String tnMode)
 	{
 		// Prepare a DatagramPacket and send it via sendReceiveSocket
 		// to port 23 on the destination host.
@@ -52,6 +52,9 @@ public class Client {
 
 
 		String fileName =filepath;
+		if(reqType.equals(Constants.WRITE_REQUEST)){
+			fileName=filewritepath;
+		}
 		byte[] fileNameBinary = fileName.getBytes();
 
 		String mode =Constants.MODE ;
@@ -66,6 +69,7 @@ public class Client {
 			request[1] =1;
 		}else{
 			request[1]=2;
+			
 		}
 		//check if the client wants the sending to be in test or normal mode
 		if(tnMode.equals(Constants.TEST)){
@@ -155,7 +159,7 @@ public class Client {
 		sendingData[0] = 0;
 		sendingData[1] = 3;
 		sendingData[2] = 0;
-		sendingData[3] = 0;
+		sendingData[3] = 1;
 		byte[] data1 = new byte[512];
 		byte[] ACK1 = new byte[4];
 		byte [] opblock=new byte[4];
@@ -166,23 +170,25 @@ public class Client {
 
 		//in case of read request we send the acknowledgement and receive the data 
 		//from the designated file
-		if (true){
+		if (request[1]==READ){
 
 			byte data[] = new byte[516];
 			receivePacket = new DatagramPacket(data, data.length);
 			//this flag to see if the data coming is of 512 bytes or less
 			boolean flag=true;
-			while(flag)
+			while(flag){
+				
+			
 				try {
 					// Block until a datagram is received via sendReceiveSocket.
-
+					
 					sendReceiveSocket.receive(receivePacket);
 				} catch(IOException e) {
 					e.printStackTrace();
 					System.exit(1);
 				}
 			System.out.println();
-			if(receivePacket.getLength()<516){
+			if(Utility.containsAzero(receivePacket.getData(),4,516)){
 				flag=false;
 			}
 			// Process the received datagram.
@@ -206,7 +212,7 @@ public class Client {
 
 			ACK[2] = receivePacket.getData()[2];
 			ACK[3] = receivePacket.getData()[3];
-			DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length);
+			DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length,receivePacket.getAddress(),receivePacket.getPort());
 
 			try {
 				sendReceiveSocket.send(sendPacketACK);
@@ -229,7 +235,7 @@ public class Client {
 				System.out.println("block #: " +Utility.getByteInt(opblock));
 			}
 
-
+			}
 		} else if(request[1]==WRITE){
 
 
@@ -260,12 +266,13 @@ public class Client {
 
 				// Form a String from the byte array.
 				String received = new String(data1,0,len);   
-				System.out.println(received + "\n");}
+				System.out.println(received + "\n");
+				}
 			System.arraycopy(receivePacketACK.getData(),0,opblock,0,4);
 			System.out.print("Containing Bytes: ");
 			System.out.print("opcode: ");
-			System.out.print(Arrays.toString(Utility.getBytes(receivePacketACK.getData(),0,2)));
-			System.out.println("block # "+Utility.getByteInt(opblock) );
+			System.out.println(Arrays.toString(Utility.getBytes(receivePacketACK.getData(),0,2)));
+			System.out.println("block #: 0 " );
 
 			int n;
 
@@ -277,12 +284,9 @@ public class Client {
 					 * We just read "n" bytes into array data. 
 					 * Now write them to the output file. 
 					 */
-					System.arraycopy(sendingData, 0,opblock,0,4);
-					blockNum=Utility.increment(opblock);
-					System.arraycopy(opblock,0,sendingData,0,4);
 					System.arraycopy(data1,0,sendingData,4,data1.length);
 					sendPacket = new DatagramPacket(sendingData, sendingData.length,
-							receivePacket.getAddress(), receivePacket.getPort());
+							receivePacketACK.getAddress(), receivePacketACK.getPort());
 
 
 
@@ -293,6 +297,10 @@ public class Client {
 						e.printStackTrace();
 						System.exit(1);
 					}
+					System.arraycopy(sendingData, 0,opblock,0,4);
+					blockNum=Utility.increment(opblock);
+					System.arraycopy(opblock,0,sendingData,0,4);
+					System.arraycopy(data1,0,sendingData,4,data1.length); 
 					System.out.println( "Cleint sent Data ");
 					if(verboseMode){
 						System.out.println("To host: " + sendPacket.getAddress());
@@ -305,8 +313,9 @@ public class Client {
 					System.out.print("Containing Bytes: ");
 					System.out.print("opcode: ");
 					System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(),0,2 )));
-					System.out.print(" block#:" +blockNum);
+					System.out.println("block#:" +(blockNum-1));
 					System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacket.getData(),4,sendPacket.getLength())));
+					
 
 					//get acknowledgement
 					try {
@@ -325,7 +334,7 @@ public class Client {
 						System.out.print("Containing: " );
 
 						// Form a String from the byte array.
-						String received = new String(data1,0,len);   
+						String received = new String(receivePacketACK.getData(),0,len);   
 						System.out.println(received + "\n");
 					}
 					System.out.print("Containing Bytes: ");
