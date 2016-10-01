@@ -18,17 +18,17 @@ public class Server {
 	private boolean isReadRequest, isWriteRequest;
 	public static String mode=Constants.VERBOSE;
 
-	
-	
-	
+
+
+
 	public Server()
 	{
 		try {
 			// Construct a datagram socket and bind it to any available 
 			// port on the local host machine. This socket will be used to
 			// send UDP Datagram packets.
-			
-			
+
+
 			// Construct a datagram socket and bind it to port 69 
 			// on the local host machine. This socket will be used to
 			// receive UDP Datagram packets.
@@ -40,9 +40,9 @@ public class Server {
 			se.printStackTrace();
 			System.exit(1);
 		} 
-		
-		
-		
+
+
+
 	}
 
 	/**
@@ -51,30 +51,30 @@ public class Server {
 	 */
 	public void receiveAndRespond() throws Exception
 	{
-			String filepath=null;
+		String filepath=null;
 		for (;;){
-		
-			 byte data[] = new byte[100];
-				receivePacket = new DatagramPacket(data, data.length);
-				if(Utility.shutDown){
-					System.exit(1);
-				}
-				//System.out.println("Server: Waiting for Packet.\n");
 
-				// Block until a datagram packet is received from receiveSocket.
-				try {        
-					//System.out.println("Waiting..."); // so we know we're waiting
-					receiveSocket.receive(receivePacket);
-				} catch (IOException e) {
-					System.out.print("IO Exception: likely:");
-					System.out.println("Receive Socket Timed Out.\n" + e);
-					e.printStackTrace();
-					System.exit(1);
-				}
-					filepath=getPath(receivePacket.getData());
-					
-				ConnectionManager connectionManagerThread = new ConnectionManager(receiveSocket, receivePacket, data,filepath,mode);
-				connectionManagerThread.start();
+			byte data[] = new byte[100];
+			receivePacket = new DatagramPacket(data, data.length);
+			if(Utility.shutDown){
+				System.exit(1);
+			}
+			//System.out.println("Server: Waiting for Packet.\n");
+
+			// Block until a datagram packet is received from receiveSocket.
+			try {        
+				//System.out.println("Waiting..."); // so we know we're waiting
+				receiveSocket.receive(receivePacket);
+			} catch (IOException e) {
+				System.out.print("IO Exception: likely:");
+				System.out.println("Receive Socket Timed Out.\n" + e);
+				e.printStackTrace();
+				System.exit(1);
+			}
+			filepath=getPath(receivePacket.getData());
+
+			ConnectionManager connectionManagerThread = new ConnectionManager(receiveSocket, receivePacket, data,filepath,mode);
+			connectionManagerThread.start();
 		}
 	}
 
@@ -89,7 +89,7 @@ public class Server {
 			} 
 			stringForm[j]=data[i];
 			j++;
-			
+
 		}
 		byte stringForm2[]=new byte[j];
 		System.arraycopy(stringForm, 0,stringForm2,0,j);
@@ -110,78 +110,78 @@ public class Server {
 	}
 }
 
-	/*
-	 * This class provides user interface for the server administrator to interact with the system.
+/*
+ * This class provides user interface for the server administrator to interact with the system.
+ */
+class ServerUI extends Thread
+{
+	/**
+	 * The text area where this thread's output will be displayed.
 	 */
-	class ServerUI extends Thread
-	{
-	    /**
-	     * The text area where this thread's output will be displayed.
-	     */
-	    
 
-	    public ServerUI() {
-	      
-	    }
 
-	    public void run() {
-	    	 BufferedReader br = null;
-	    	 String mode=Constants.VERBOSE;
-	    	 try{
-	    		 br = new BufferedReader(new InputStreamReader(System.in));
-	    	 while (true) {
+	public ServerUI() {
 
-	            	System.out.println("Default Mode is " + Constants.VERBOSE);
-	            	System.out.println();
-	            	System.out.println("Type help for a list of available commands.");
-	            	System.out.println();
-	                System.out.println("Enter command: ");
-	                String input = br.readLine();
-	                if (input.equals(Constants.CMD_HELP)){
-	                	System.out.println();
-	                	System.out.println("List of Commands:");
-	                	System.out.println("mode - Display the current mode (verbose/quiet)");
-	                	System.out.println("changeMode - Change the mode (verbose/quiet)");
-	                	System.out.println("shutdown - Shut down Server");
-	                	System.out.println();
-	                }else if (input.equals(Constants.CMD_MODE)) {
-	                	System.out.println("Current mode: " +mode );
-	                	System.out.println();
-	                }else if (input.equals(Constants.CMD_CHANGE_MODE)){
-	                	System.out.print("Set logging mode (verbose/quiet): ");
-	                    input = br.readLine();
-	                    while (!(input.equals(Constants.VERBOSE) || (input.equals(Constants.QUIET)))){
-	                		System.out.print("Please enter correct mode (verbose or quiet): ");
-		                	input = br.readLine();
-	                	}
-	                    
-	                    mode = input;
-	                    Server.mode=input;
-	                    System.out.println("Mode set to " + input);
-	                    System.out.println();
-	                    
-	                }
-	                else if(input.equals(Constants.CMD_SHUTDOWN)){
-	                	Utility.shutDown=true;
-	                	//System.out.println("Server shut down");
-	                	//System.exit(0);
-	                }else{
-	                	System.out.println("Command not recognized. Please try again.");
-	                }
-	    	 }
-	    	 } catch (IOException e) {
-		            e.printStackTrace();
-		        } finally {
-		            if (br != null) {
-		                try {
-		                    br.close();
-		                } catch (IOException e) {
-		                    e.printStackTrace();
-		                }
-		            }
-		        }
-	                }
-	                
-	    }
-	
+	}
+
+	public void run() {
+		BufferedReader br = null;
+		String mode=Constants.VERBOSE;
+		try{
+			br = new BufferedReader(new InputStreamReader(System.in));
+			while (true) {
+
+				System.out.println("Default Mode is " + Constants.VERBOSE);
+				System.out.println();
+				System.out.println("Type help for a list of available commands.");
+				System.out.println();
+				System.out.println("Enter command: ");
+				String input = br.readLine();
+				if (input.equals(Constants.CMD_HELP)){
+					System.out.println();
+					System.out.println("List of Commands:");
+					System.out.println("mode - Display the current mode (verbose/quiet)");
+					System.out.println("changeMode - Change the mode (verbose/quiet)");
+					System.out.println("shutdown - Shut down Server");
+					System.out.println();
+				}else if (input.equals(Constants.CMD_MODE)) {
+					System.out.println("Current mode: " +mode );
+					System.out.println();
+				}else if (input.equals(Constants.CMD_CHANGE_MODE)){
+					System.out.print("Set logging mode (verbose/quiet): ");
+					input = br.readLine();
+					while (!(input.equals(Constants.VERBOSE) || (input.equals(Constants.QUIET)))){
+						System.out.print("Please enter correct mode (verbose or quiet): ");
+						input = br.readLine();
+					}
+
+					mode = input;
+					Server.mode=input;
+					System.out.println("Mode set to " + input);
+					System.out.println();
+
+				}
+				else if(input.equals(Constants.CMD_SHUTDOWN)){
+					Utility.shutDown=true;
+					//System.out.println("Server shut down");
+					//System.exit(0);
+				}else{
+					System.out.println("Command not recognized. Please try again.");
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+}
+
 
