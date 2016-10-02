@@ -26,6 +26,7 @@ public class Client {
 	private static final byte READ = 1, WRITE = 2, INVALID = 5;
 	public int portNum;
 	public boolean verboseMode;
+	private boolean flag3;
 	public Client()
 	{
 		try {
@@ -293,8 +294,11 @@ public class Client {
 					System.arraycopy(data1,0,sendingData,4,data1.length);
 					sendPacket = new DatagramPacket(sendingData, sendingData.length,
 							receivePacketACK.getAddress(), receivePacketACK.getPort());
-
-
+						//this will check for us if the last data transfer is full, we send a byte of zeros to the server.
+						if(!Utility.containsAzero(data1,0,512)){
+							//if we enter this condition it means that data1 doesn't contain a zero
+							flag3=false;
+						}
 
 					//sending data to the server
 					try {
@@ -324,7 +328,7 @@ public class Client {
 					System.out.println("block#:" +(blockNum-1));
 					System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacket.getData(),4,sendPacket.getLength())));
 
-
+					data1=new byte[512];
 					//get acknowledgement
 					try {
 						sendReceiveSocket.receive(receivePacketACK);
@@ -369,10 +373,44 @@ public class Client {
 				e.printStackTrace();
 			}
 
+			
+
+			//if flag3 is set to false it means that the last data transfered are exactly 512 byte
+			if(!flag3){
+				System.arraycopy(data1,0,sendingData,4,data1.length);
+				sendPacket = new DatagramPacket(sendingData, sendingData.length,
+						receivePacketACK.getAddress(), receivePacketACK.getPort());
 
 
 
-
+				//sending data to the server
+				try {
+					sendReceiveSocket.send(sendPacket);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+				
+				System.arraycopy(sendingData, 0,opblock,0,4);// adding the block number to the data
+				blockNum=Utility.increment(opblock); // incrementing the block number  
+				System.arraycopy(opblock,0,sendingData,0,4);
+				System.arraycopy(data1,0,sendingData,4,data1.length); 
+				
+				System.out.println( "Client sent Data ");
+				if(verboseMode){
+					System.out.println("To host: " + sendPacket.getAddress());
+					System.out.println("Destination host port: " + sendPacket.getPort());
+					len = sendPacket.getLength();
+					System.out.println("Length: " + len);
+					System.out.print("Containing: ");
+					System.out.println(new String(sendPacket.getData(),0,len));
+				}
+				System.out.print("Containing Bytes: ");
+				System.out.print("opcode: ");
+				System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(),0,2 )));
+				System.out.println("block#:" +(blockNum-1));
+				System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacket.getData(),4,sendPacket.getLength())));
+			}
 
 
 

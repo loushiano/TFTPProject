@@ -30,6 +30,7 @@ public class ConnectionManager extends Thread{
 	public String mode;
 	public int len;
 	public String received;
+	private boolean flag3;
 	public ConnectionManager(DatagramSocket receiveSocket, DatagramPacket receivedPacket, byte[] data,String filepath,String mode ){
 		this.receivePacket = receivedPacket;
 		this.receiveSocket = receiveSocket;
@@ -156,7 +157,12 @@ public class ConnectionManager extends Thread{
 						System.out.println("block#: "+Utility.increment(opblock));
 						System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacketDATA.getData(),4,len)));
 					}
-					
+					//this will check for us if the last data transfer is full, we send a byte of zeros to the server.
+					if(!Utility.containsAzero(data1,0,512)){
+						//if we enter this condition it means that data1 doesn't contain a zero
+						flag3=false;
+					}
+					data1=new byte[512];
 					// creating a packet to receive the acknowlegment  
 					DatagramPacket receivePacketACK = new DatagramPacket(ACK, ACK.length);
 					
@@ -217,6 +223,28 @@ public class ConnectionManager extends Thread{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+				if(flag3){
+					// creating a send packet
+					DatagramPacket sendPacketDATA = new DatagramPacket(responseData, responseData.length,
+							receivePacket.getAddress(), receivePacket.getPort());
+					
+					// printing the info of the sending data 
+					System.out.println( "Server: Sending Data:");
+					if(mode.equals(Constants.VERBOSE)){
+						System.out.println("To host: " + sendPacketDATA.getAddress());
+						System.out.println("Destination host port: " + sendPacketDATA.getPort());
+						len = sendPacketDATA.getLength();
+						System.out.println("Length: " + len);
+						System.out.print("Containing: ");
+						System.out.println(new String(sendPacketDATA.getData(),0,len));
+						System.out.print("Containing Bytes: ");
+						System.out.println("opcode: "+Arrays.toString(Utility.getBytes(sendPacketDATA.getData(),0,2)));
+
+						System.arraycopy(responseData,0,opblock,0,4);
+						System.out.println("block#: "+Utility.increment(opblock));
+						System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacketDATA.getData(),4,len)));
+				}
+				}
 			// checking if its write request 
 		} else if (isWriteRequest){
 	
@@ -247,7 +275,7 @@ public class ConnectionManager extends Thread{
 				System.exit(1);
 			}
 
-			// printing the info fo the ack 
+			// printing the info for the ack 
 			System.out.println( "Server: Sent Acknowledgement:");
 			if(mode.equals(Constants.VERBOSE)){
 				System.out.println("To host: " + receivePacket.getAddress());
@@ -260,16 +288,14 @@ public class ConnectionManager extends Thread{
 				System.out.println("opcode: "+Arrays.toString(Utility.getBytes(sendPacketACK.getData(),0,2)));
 				System.out.println("block#: 0");
 			}
-			System.out.println("ACKNOWLEDGEMENT SENT");
+			
 
 			//this while will keep looping until we get data less than 512 byte from the client
 			while(flag){
 		
 
 
-				if(Utility.containsAzero(receivePacket.getData(),4,516)){
-					flag=false;
-				}
+				
 
 				System.out.println("now waiting for new data");
 				//get data
@@ -278,6 +304,9 @@ public class ConnectionManager extends Thread{
 				} catch (IOException e) {
 					e.printStackTrace();
 					System.exit(1);
+				}
+				if(Utility.containsAzero(receivePacketDATA.getData(),4,516)){
+					flag=false;
 				}
 				System.out.println("Server: Data received:");
 				if(mode.equals(Constants.VERBOSE));
@@ -340,6 +369,7 @@ public class ConnectionManager extends Thread{
 
 
 		}
+		System.out.println("done with transeferring");
 	}
 
 

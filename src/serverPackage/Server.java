@@ -122,7 +122,7 @@ class ServerUI extends Thread
 	public ServerUI() {
 
 	}
-
+//run method checks for commands, if the user changes mode it changes it, and if the user wants to shutdown the server it shuts it down 
 	public void run() {
 		BufferedReader br = null;
 		String mode=Constants.VERBOSE;

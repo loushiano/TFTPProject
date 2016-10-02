@@ -19,9 +19,10 @@ public class Utility {
 	//return the bytes of the given array 
 	public static byte[] getBytes(byte[] data, int pos,int len) {
 		
-		 byte[] bytes = new byte[len];
+		 byte[] bytes = new byte[len-pos];
 		 int j=0;
-		for (int i = pos; i<len; i++){
+
+		 for (int i = pos; i<len; i++){
 			bytes[j] = data[i];
 			j++;
 		}
