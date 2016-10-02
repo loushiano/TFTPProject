@@ -53,17 +53,16 @@ public class Server {
 	{
 		String filepath=null;
 		for (;;){
-
+			// receiving a packet from the client  
 			byte data[] = new byte[100];
 			receivePacket = new DatagramPacket(data, data.length);
 			if(Utility.shutDown){
 				System.exit(1);
 			}
-			//System.out.println("Server: Waiting for Packet.\n");
-
+		
 			// Block until a datagram packet is received from receiveSocket.
 			try {        
-				//System.out.println("Waiting..."); // so we know we're waiting
+				
 				receiveSocket.receive(receivePacket);
 			} catch (IOException e) {
 				System.out.print("IO Exception: likely:");
@@ -72,14 +71,14 @@ public class Server {
 				System.exit(1);
 			}
 			filepath=getPath(receivePacket.getData());
-
+            // creating a thread that deals with a the receiving packet 
 			ConnectionManager connectionManagerThread = new ConnectionManager(receiveSocket, receivePacket, data,filepath,mode);
 			connectionManagerThread.start();
 		}
 	}
 
 
-
+    //this method  returns  the path of the file  
 	private String getPath(byte[] data) {
 		byte stringForm[]=new byte[100];
 		int j=0;

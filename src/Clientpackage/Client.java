@@ -44,22 +44,29 @@ public class Client {
 	 * @param type Type of request - Read/Write/Invalid
 	 * @param iteration Current iteration Number.
 	 */
+	
+	
 	public void sendAndReceive(String reqType,String filepath,String filewritepath,String vqMode,String tnMode)
 	{
 		// Prepare a DatagramPacket and send it via sendReceiveSocket
 		// to port 23 on the destination host.
 
 
-
+		
 		String fileName =filepath;
+		
 		if(reqType.equals(Constants.WRITE_REQUEST)){
 			fileName=filewritepath;
 		}
+		
+		// converting the file name to binary
 		byte[] fileNameBinary = fileName.getBytes();
-
+		
+		// converting the mode to binary
 		String mode =Constants.MODE ;
 		byte[] modeBinary = mode.getBytes();
 
+		// creating the request array
 		byte[] request = new byte[2 + fileNameBinary.length + 1 + modeBinary.length 
 		                          + 1];
 
@@ -92,7 +99,8 @@ public class Client {
 		}
 
 		int lengthTillFirstZero = 2 + fileNameBinary.length;
-
+		
+		// adding a zero in the middle of the array 
 		request[lengthTillFirstZero] = 0;
 
 		int tempCounter = 0;
@@ -111,25 +119,16 @@ public class Client {
 
 
 
-		// Construct a datagram packet that is to be sent to a specified port 
-		// on a specified host.
-		// The arguments are:
-		//  msg - the message contained in the packet (the byte array)
-		//  msg.length - the length of the byte array
-		//  InetAddress.getLocalHost() - the Internet address of the 
-		//     destination host.
-		//     In this example, we want the destination to be the same as
-		//     the source (i.e., we want to run the client and server on the
-		//     same computer). InetAddress.getLocalHost() returns the Internet
-		//     address of the local host.
-		//  23 - the destination port number on the destination host.
+        // creating the send packet 
 		try {
 			sendPacket = new DatagramPacket(request, request.length,
-					InetAddress.getLocalHost(),portNum);//IRAQI: we put 69 because we do not have host now
+					InetAddress.getLocalHost(),portNum);// we put 69 because we do not have host now
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
+		// printing the info if its verbose mode
 		if(verboseMode){
 			System.out.println("Client: Sending request:");
 			System.out.println("To host: " + sendPacket.getAddress());
@@ -141,8 +140,8 @@ public class Client {
 			System.out.print("Containing Bytes: ");
 			System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(),0, len)));
 		}
+		
 		// Send the datagram packet to the server via the send/receive socket. 
-
 		try {
 			sendReceiveSocket.send(sendPacket);
 		} catch (IOException e) {
@@ -193,6 +192,7 @@ public class Client {
 				}
 				// Process the received datagram.
 				System.out.println("Data from server received:");
+				
 				if(verboseMode){
 					System.out.println("From host: " + receivePacket.getAddress());
 					System.out.println("Host port: " + receivePacket.getPort());
@@ -212,8 +212,11 @@ public class Client {
 
 				ACK[2] = receivePacket.getData()[2];
 				ACK[3] = receivePacket.getData()[3];
+				
+				// creratring a send packet for acknowledgement
 				DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length,receivePacket.getAddress(),receivePacket.getPort());
-
+				
+				// sending  the acknowledgement via sendReceive Socket
 				try {
 					sendReceiveSocket.send(sendPacketACK);
 				} catch (IOException e) {
@@ -236,6 +239,8 @@ public class Client {
 				}
 
 			}
+			
+			// check if it is write request
 		} else if(request[1]==WRITE){
 
 
@@ -248,7 +253,7 @@ public class Client {
 			}
 
 
-
+			// creating a packet to receive acknowledgment from the server 
 			DatagramPacket receivePacketACK = new DatagramPacket(ACK1, ACK1.length);
 			try {
 				sendReceiveSocket.receive(receivePacketACK);
@@ -256,6 +261,7 @@ public class Client {
 				e.printStackTrace();
 				System.exit(1);
 			}
+			
 			System.out.println("Acknowledgement received");
 			if(verboseMode){
 				System.out.println("From host: " + receivePacketACK.getAddress());
@@ -279,7 +285,7 @@ public class Client {
 			/* Read the file in 512 byte chunks. */
 
 			try {
-				while ((n = in.read(data1)) != -1) {
+				while ((n = in.read(data1)) != -1) { // check if the file is finished 
 					/* 
 					 * We just read "n" bytes into array data. 
 					 * Now write them to the output file. 
@@ -290,7 +296,7 @@ public class Client {
 
 
 
-					//send data
+					//sending data to the server
 					try {
 						sendReceiveSocket.send(sendPacket);
 					} catch (IOException e) {
@@ -298,8 +304,8 @@ public class Client {
 						System.exit(1);
 					}
 					
-					System.arraycopy(sendingData, 0,opblock,0,4);
-					blockNum=Utility.increment(opblock);
+					System.arraycopy(sendingData, 0,opblock,0,4);// adding the block number to the data
+					blockNum=Utility.increment(opblock); // incrementing the block number  
 					System.arraycopy(opblock,0,sendingData,0,4);
 					System.arraycopy(data1,0,sendingData,4,data1.length); 
 					
@@ -326,7 +332,7 @@ public class Client {
 						e.printStackTrace();
 						System.exit(1);
 					}
-
+					// printing the info for the received ack
 					System.out.println("Acknowledgement received");
 					if(verboseMode){
 						System.out.println("From host: " + receivePacketACK.getAddress());

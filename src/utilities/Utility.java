@@ -15,6 +15,8 @@ public class Utility {
 	 * @param len length of the trimmed array
 	 * @return trimmed byte array
 	 */
+	
+	//return the bytes of the given array 
 	public static byte[] getBytes(byte[] data, int pos,int len) {
 		
 		 byte[] bytes = new byte[len];
@@ -26,12 +28,16 @@ public class Utility {
 		
 		return bytes;
 	}
+	
+	// check if the array contains a zero
 	public static boolean containsAzero(byte[] data2, int i, int j) {
 		for(int k=i;k<j;k++){
 			if(data2[k]==0) return true;
 		}
 		return false;
 	}
+	
+	// to increment the array  
 	public static int increment(byte array[]){
 		int j,k,l;
 		 boolean flag,flag2;

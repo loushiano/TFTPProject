@@ -47,7 +47,9 @@ public class ConnectionManager extends Thread{
 	public void run(){
 		// Process the received datagram.
 
+		
 		System.out.println("Server: request received:");
+		//checking the mode if its verbose or Normal
 		if(mode.equals(Constants.VERBOSE)){
 
 			System.out.println("From host: " + receivePacket.getAddress());
@@ -64,10 +66,14 @@ public class ConnectionManager extends Thread{
 		}
 
 		//Validate Request
+		
 		if (isValidRequest(data)){
+			//checking if it is read request 
 			if (data[1] == READ){
 				isReadRequest = true;
 				isWriteRequest = false;
+				
+				// checking if it is write request 
 			} else if (data[1] == WRITE){
 				isReadRequest = false;
 				isWriteRequest = true;
@@ -94,34 +100,13 @@ public class ConnectionManager extends Thread{
 
 
 
-		// Construct a datagram packet that is to be sent to a specified port 
-		// on a specified host.
-		// The arguments are:
-		//  data - the packet data (a byte array). This is the packet data
-		//         that was received from the client.
-		//  receivePacket.getLength() - the length of the packet data.
-		//    Since we are echoing the received packet, this is the length 
-		//    of the received packet's data. 
-		//    This value is <= data.length (the length of the byte array).
-		//  receivePacket.getAddress() - the Internet address of the 
-		//     destination host. Since we want to send a packet back to the 
-		//     client, we extract the address of the machine where the
-		//     client is running from the datagram that was sent to us by 
-		//     the client.
-		//  receivePacket.getPort() - the destination port number on the 
-		//     destination host where the client is running. The client
-		//     sends and receives datagrams through the same socket/port,
-		//     so we extract the port that the client used to send us the
-		//     datagram, and use that as the destination port for the echoed
-		//     packet.
-
-
 		//Create a response byte array
 		//0301 for a read request
 		//0401 for a write request
 		byte[] responseData = null;
 
 		if (isReadRequest){
+			// creating the response date which contains 512 data and 4 bytes of the op block
 			responseData=new byte[516];
 			responseData[0] = 0;
 			responseData[1] = 3;
@@ -135,7 +120,8 @@ public class ConnectionManager extends Thread{
 				e.printStackTrace();
 			}
 
-
+			// creating an array of data to send the data 
+			
 			byte[] data1 = new byte[512];
 			byte[] ACK = new byte[4];
 
@@ -149,8 +135,12 @@ public class ConnectionManager extends Thread{
 					 * Now write them to the output file. 
 					 */
 					System.arraycopy(data1,0,responseData,4,data1.length);
+					
+					// creating a send packet
 					DatagramPacket sendPacketDATA = new DatagramPacket(responseData, responseData.length,
 							receivePacket.getAddress(), receivePacket.getPort());
+					
+					// printing the info of the sending data 
 					System.out.println( "Server: Sending Data:");
 					if(mode.equals(Constants.VERBOSE)){
 						System.out.println("To host: " + sendPacketDATA.getAddress());
@@ -166,9 +156,14 @@ public class ConnectionManager extends Thread{
 						System.out.println("block#: "+Utility.increment(opblock));
 						System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacketDATA.getData(),4,len)));
 					}
+					
+					// creating a packet to receive the acknowlegment  
 					DatagramPacket receivePacketACK = new DatagramPacket(ACK, ACK.length);
+					
 					//send data
 					System.arraycopy(opblock,0,responseData,0,4);
+					
+					// sending the data packet to the client 
 					try {
 						sendReceiveSocket.send(sendPacketDATA);
 					} catch (IOException e) {
@@ -185,8 +180,10 @@ public class ConnectionManager extends Thread{
 						e.printStackTrace();
 						System.exit(1);
 					}
+					
 
 					System.out.println("Server: Acknowledgement received:");
+					
 					if(mode.equals(Constants.VERBOSE)){
 						System.out.println("From host: " + receivePacketACK.getAddress());
 						System.out.println("Host port: " + receivePacketACK.getPort());
@@ -220,19 +217,9 @@ public class ConnectionManager extends Thread{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			// checking if its write request 
 		} else if (isWriteRequest){
-			/*responseData=new byte[4];
-						responseData[0] = 0;
-						responseData[1] = 4;
-						responseData[2] = 0;
-						responseData[3] = 0; */
-			/*BufferedOutputStream out = null;
-			try {
-				out = new BufferedOutputStream(new FileOutputStream(filepath));
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
+	
 			BufferedOutputStream out=null;
 			try {
 				out =
@@ -241,12 +228,18 @@ public class ConnectionManager extends Thread{
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			
+			// creating a an array data to recive the data from the client 
 			byte[] DATA = new byte[516];
+			// creating an array to send ack
 			byte[] ACK = {0,4,0,0};
+			
+			// creating a packet for the ack
 			DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length, receivePacket.getAddress(), receivePacket.getPort());
+			// creating packet to receive data 
 			DatagramPacket receivePacketDATA = new DatagramPacket(DATA, DATA.length);
 
-
+            // sending the ack packet 
 			try {
 				sendReceiveSocket.send(sendPacketACK);
 			} catch (IOException e) {
@@ -254,7 +247,7 @@ public class ConnectionManager extends Thread{
 				System.exit(1);
 			}
 
-
+			// printing the info fo the ack 
 			System.out.println( "Server: Sent Acknowledgement:");
 			if(mode.equals(Constants.VERBOSE)){
 				System.out.println("To host: " + receivePacket.getAddress());
@@ -269,9 +262,9 @@ public class ConnectionManager extends Thread{
 			}
 			System.out.println("ACKNOWLEDGEMENT SENT");
 
-
+			//this while will keep looping until we get data less than 512 byte from the client
 			while(flag){
-				//send ack
+		
 
 
 				if(Utility.containsAzero(receivePacket.getData(),4,516)){
@@ -358,6 +351,7 @@ public class ConnectionManager extends Thread{
 	 * @param data the request data to validate
 	 * @return false if request is not valid, true if request is valid
 	 */
+	// checks if the request is valid or not 
 	public boolean isValidRequest(byte[] data){
 		boolean isValid = true;
 
