@@ -18,7 +18,7 @@ public class ClientUI {
 
 	        BufferedReader br = null;
 	        
-	        String requestType = "", filePath, vqMode,filewritepath = null;
+	        String requestType = "", filePath,filePath2, vqMode,filewritepath = null;
 	
 	        String tnMode = Constants.NORMAL;
 
@@ -74,6 +74,10 @@ public class ClientUI {
 	                	input = br.readLine();
 	                	filePath = input;
 	                	System.out.println();
+	                	System.out.print("Enter file path to which u want to write the file on: ");
+	                	input = br.readLine();
+	                	filePath2 = input;
+	                	System.out.println();
 	                	System.out.print("Enter mode (verbose or quiet): ");
 	                	input = br.readLine();
 	                	
@@ -86,7 +90,7 @@ public class ClientUI {
 	                	System.out.println();
 	                	
 	            
-	                	c.sendAndReceive(requestType, filePath,filewritepath, vqMode, tnMode);
+	                	c.sendAndReceive(requestType, filePath,filewritepath,filePath2, vqMode, tnMode);
 	                	
 	                    
 	                } else if(input.equals(Constants.CMD_WRQ)){
@@ -111,8 +115,8 @@ public class ClientUI {
 	                	vqMode = input;
 	                	System.out.println();
 	                	
-	            
-	                	c.sendAndReceive(requestType, filePath,filewritepath, vqMode, tnMode);
+	                	filePath2=null;
+	                	c.sendAndReceive(requestType, filePath,filewritepath,filePath2, vqMode, tnMode);
 	                	
 	                }
 	                

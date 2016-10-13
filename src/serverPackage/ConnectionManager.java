@@ -30,7 +30,7 @@ public class ConnectionManager extends Thread{
 	public String mode;
 	public int len;
 	public String received;
-	private boolean flag3;
+	private boolean flag3=false;
 	public ConnectionManager(DatagramSocket receiveSocket, DatagramPacket receivedPacket, byte[] data,String filepath,String mode ){
 		this.receivePacket = receivedPacket;
 		this.receiveSocket = receiveSocket;
@@ -135,7 +135,22 @@ public class ConnectionManager extends Thread{
 					 * We just read "n" bytes into array data. 
 					 * Now write them to the output file. 
 					 */
-					System.arraycopy(data1,0,responseData,4,data1.length);
+					if(!Utility.containsAzero(data1,0,512)){
+						//if we enter this condition it means that data1 doesn't contain a zero
+						flag3=false;
+						System.arraycopy(data1,0,responseData,4,data1.length);
+					}else {
+						//if data contains zero it means it is the last set of bytes we need to transefer so we have to create a packet
+						//that is less than 516 bytes
+						flag3=true;
+						int j=Utility.getFirstZero(data1);
+							byte copyArray[]=responseData;
+						responseData=new byte[j+4];
+						System.arraycopy(copyArray, 0,responseData,0,4);
+						System.arraycopy(data1,0,responseData,4,j);
+						
+					}
+					
 					
 					// creating a send packet
 					DatagramPacket sendPacketDATA = new DatagramPacket(responseData, responseData.length,
@@ -158,10 +173,7 @@ public class ConnectionManager extends Thread{
 						System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacketDATA.getData(),4,len)));
 					}
 					//this will check for us if the last data transfer is full, we send a byte of zeros to the server.
-					if(!Utility.containsAzero(data1,0,512)){
-						//if we enter this condition it means that data1 doesn't contain a zero
-						flag3=false;
-					}
+					
 					data1=new byte[512];
 					// creating a packet to receive the acknowlegment  
 					DatagramPacket receivePacketACK = new DatagramPacket(ACK, ACK.length);
@@ -211,19 +223,13 @@ public class ConnectionManager extends Thread{
 
 
 				}
-
-			}
-			catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				in.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-				if(flag3){
+				if(!flag3){
+					/* 
+					 * We just read "n" bytes into array data. 
+					 * Now write them to the output file. 
+					 */
+					System.arraycopy(data1,0,responseData,4,data1.length);
+					
 					// creating a send packet
 					DatagramPacket sendPacketDATA = new DatagramPacket(responseData, responseData.length,
 							receivePacket.getAddress(), receivePacket.getPort());
@@ -243,8 +249,66 @@ public class ConnectionManager extends Thread{
 						System.arraycopy(responseData,0,opblock,0,4);
 						System.out.println("block#: "+Utility.increment(opblock));
 						System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacketDATA.getData(),4,len)));
+					}
+					
+					
+					// creating a packet to receive the acknowlegment  
+					DatagramPacket receivePacketACK = new DatagramPacket(ACK, ACK.length);
+					
+					//send data
+					System.arraycopy(opblock,0,responseData,0,4);
+					
+					// sending the data packet to the client 
+					try {
+						sendReceiveSocket.send(sendPacketDATA);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.exit(1);
+					}
+					data1=new byte[512];
+					System.out.println("data has been sent");
+					//get acknowledge
+
+					try {
+						sendReceiveSocket.receive(receivePacketACK);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.exit(1);
+					}
+					
+
+					System.out.println("Server: Acknowledgement received:");
+					
+					if(mode.equals(Constants.VERBOSE)){
+						System.out.println("From host: " + receivePacketACK.getAddress());
+						System.out.println("Host port: " + receivePacketACK.getPort());
+						len = receivePacketACK.getLength();
+						System.out.println("Length: " + len);
+						System.out.print("Containing: " );
+
+						// Form a String from the byte array.
+						received = new String(data,0,len);   
+						System.out.println(received + "\n");
+						System.out.print("Containing Bytes: ");
+						System.out.println("opcode: "+ Arrays.toString(Utility.getBytes(receivePacketACK.getData(),0,2)));
+
+						System.out.println("block#: "+ Utility.getByteInt(receivePacketACK.getData()));
+
 				}
-				}
+
+			}
+			}
+			catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				in.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+				
 			// checking if its write request 
 		} else if (isWriteRequest){
 	

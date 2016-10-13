@@ -126,4 +126,14 @@ public class Utility {
 		
 	}
 
+	public static int getFirstZero(byte[] data1) {
+		
+		for(int j=0;j<data1.length;j++){
+			if(data1[j]==0){
+				return j-1;
+			}
+		}
+		return 0;
+	}
+
 }

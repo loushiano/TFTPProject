@@ -47,7 +47,7 @@ public class Client {
 	 */
 	
 	
-	public void sendAndReceive(String reqType,String filepath,String filewritepath,String vqMode,String tnMode)
+	public void sendAndReceive(String reqType,String filepath,String filewritepath,String readFilePath,String vqMode,String tnMode)
 	{
 		// Prepare a DatagramPacket and send it via sendReceiveSocket
 		// to port 23 on the destination host.
@@ -58,7 +58,10 @@ public class Client {
 		
 		if(reqType.equals(Constants.WRITE_REQUEST)){
 			fileName=filewritepath;
+		}else {
+			
 		}
+		
 		
 		// converting the file name to binary
 		byte[] fileNameBinary = fileName.getBytes();
@@ -176,6 +179,14 @@ public class Client {
 			receivePacket = new DatagramPacket(data, data.length);
 			//this flag to see if the data coming is of 512 bytes or less
 			boolean flag=true;
+			/*BufferedOutputStream out=null;
+			try {
+				out =
+						new BufferedOutputStream(new FileOutputStream(filepath));
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}*/
 			while(flag){
 
 
@@ -188,6 +199,10 @@ public class Client {
 					System.exit(1);
 				}
 				System.out.println();
+				//if what we are receiving is less than 516, this means that we do not have to accept anything anymore
+				if(receivePacket.getLength()<516){
+					flag=false;
+				}
 				if(Utility.containsAzero(receivePacket.getData(),4,516)){
 					flag=false;
 				}
@@ -210,10 +225,15 @@ public class Client {
 				System.out.println("opcode: "+Arrays.toString(Utility.getBytes(receivePacket.getData(),0,2)));
 				System.out.println("block #: " +Utility.getByteInt(opblock));
 				System.out.println("data: "+Arrays.toString(Utility.getBytes(receivePacket.getData(),4,receivePacket.getLength())));
-
+					
 				ACK[2] = receivePacket.getData()[2];
 				ACK[3] = receivePacket.getData()[3];
-				
+				/*try {
+					out.write(receivePacket.getData(), 0,receivePacket.getLength());
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}*/
 				// creratring a send packet for acknowledgement
 				DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length,receivePacket.getAddress(),receivePacket.getPort());
 				
@@ -240,7 +260,12 @@ public class Client {
 				}
 
 			}
-			
+			/*try {
+				out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
 			// check if it is write request
 		} else if(request[1]==WRITE){
 
