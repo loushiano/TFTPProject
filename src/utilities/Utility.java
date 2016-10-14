@@ -130,7 +130,7 @@ public class Utility {
 		
 		for(int j=0;j<data1.length;j++){
 			if(data1[j]==0){
-				return j-1;
+				return j;
 			}
 		}
 		return 0;

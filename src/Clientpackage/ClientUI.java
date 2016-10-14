@@ -70,11 +70,11 @@ public class ClientUI {
 	                	requestType = Constants.READ_REQUEST;
 	                		
       	
-	                	System.out.print("Enter file path: ");
+	                	System.out.print("Enter a relative file path: ");
 	                	input = br.readLine();
 	                	filePath = input;
 	                	System.out.println();
-	                	System.out.print("Enter file path to which u want to write the file on: ");
+	                	System.out.print("Enter a full file path to which u want to write the file on: ");
 	                	input = br.readLine();
 	                	filePath2 = input;
 	                	System.out.println();
@@ -95,11 +95,11 @@ public class ClientUI {
 	                    
 	                } else if(input.equals(Constants.CMD_WRQ)){
 	                	requestType = Constants.WRITE_REQUEST;
-	                	System.out.print("Enter file path to read from: ");
+	                	System.out.print("Enter a full file path to read from: ");
 	                	input = br.readLine();
 	                	filePath = input;
 	                	System.out.println();
-	                	System.out.print("Enter file path to write To:");
+	                	System.out.print("Enter a relative file path to write To:");
 	                	input = br.readLine();
 	                	filewritepath =input;
 	                	

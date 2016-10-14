@@ -31,10 +31,11 @@ public class ConnectionManager extends Thread{
 	public int len;
 	public String received;
 	private boolean flag3=false;
+	private final String FILEPATH="c:/Users/";
 	public ConnectionManager(DatagramSocket receiveSocket, DatagramPacket receivedPacket, byte[] data,String filepath,String mode ){
 		this.receivePacket = receivedPacket;
 		this.receiveSocket = receiveSocket;
-		this.filepath=filepath;
+		this.filepath=FILEPATH+filepath;
 		this.mode=mode;
 		try {
 			sendReceiveSocket = new DatagramSocket();
@@ -372,6 +373,9 @@ public class ConnectionManager extends Thread{
 				if(Utility.containsAzero(receivePacketDATA.getData(),4,516)){
 					flag=false;
 				}
+				if(receivePacketDATA.getLength()<516){
+					flag=false;
+				}
 				System.out.println("Server: Data received:");
 				if(mode.equals(Constants.VERBOSE));
 				System.out.println("From host: " + receivePacket.getAddress());
@@ -390,7 +394,7 @@ public class ConnectionManager extends Thread{
 				System.out.println("data: "+Arrays.toString(Utility.getBytes(receivePacketDATA.getData(),4,len)));
 
 				try {
-					out.write(receivePacketDATA.getData(), 0,receivePacketDATA.getLength());
+					out.write(receivePacketDATA.getData(),4,receivePacketDATA.getLength()-4);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

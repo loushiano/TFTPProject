@@ -46,7 +46,7 @@ public class Client {
 	 * @param iteration Current iteration Number.
 	 */
 	
-	//hello there 
+	
 	public void sendAndReceive(String reqType,String filepath,String filewritepath,String readFilePath,String vqMode,String tnMode)
 	{
 		// Prepare a DatagramPacket and send it via sendReceiveSocket
@@ -179,14 +179,14 @@ public class Client {
 			receivePacket = new DatagramPacket(data, data.length);
 			//this flag to see if the data coming is of 512 bytes or less
 			boolean flag=true;
-			/*BufferedOutputStream out=null;
+			BufferedOutputStream out=null;
 			try {
 				out =
-						new BufferedOutputStream(new FileOutputStream(filepath));
+						new BufferedOutputStream(new FileOutputStream(readFilePath));
 			} catch (FileNotFoundException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			}*/
+			}
 			while(flag){
 
 
@@ -228,13 +228,13 @@ public class Client {
 					
 				ACK[2] = receivePacket.getData()[2];
 				ACK[3] = receivePacket.getData()[3];
-				/*try {
-					out.write(receivePacket.getData(), 0,receivePacket.getLength());
+				try {
+					out.write(receivePacket.getData(), 4,receivePacket.getLength()-4);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
-				}*/
-				// creratring a send packet for acknowledgement
+				}
+				// creating a send packet for acknowledgement
 				DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length,receivePacket.getAddress(),receivePacket.getPort());
 				
 				// sending  the acknowledgement via sendReceive Socket
@@ -260,12 +260,12 @@ public class Client {
 				}
 
 			}
-			/*try {
+			try {
 				out.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}*/
+			}
 			// check if it is write request
 		} else if(request[1]==WRITE){
 
@@ -323,7 +323,16 @@ public class Client {
 						if(!Utility.containsAzero(data1,0,512)){
 							//if we enter this condition it means that data1 doesn't contain a zero
 							flag3=false;
+						}else{
+							flag3=true;
+							int k=Utility.getFirstZero(data1);
+							byte copyArray[]=sendingData;
+						sendingData=new byte[k+4];
+						System.arraycopy(copyArray, 0,sendingData,0,4);
+						System.arraycopy(data1,0,sendingData,4,k);
 						}
+						sendPacket = new DatagramPacket(sendingData, sendingData.length,
+								receivePacketACK.getAddress(), receivePacketACK.getPort());
 
 					//sending data to the server
 					try {
@@ -336,7 +345,7 @@ public class Client {
 					System.arraycopy(sendingData, 0,opblock,0,4);// adding the block number to the data
 					blockNum=Utility.increment(opblock); // incrementing the block number  
 					System.arraycopy(opblock,0,sendingData,0,4);
-					System.arraycopy(data1,0,sendingData,4,data1.length); 
+					System.arraycopy(data1,0,sendingData,4,sendingData.length-4); 
 					
 					System.out.println( "Client sent Data ");
 					if(verboseMode){
@@ -435,6 +444,30 @@ public class Client {
 				System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(),0,2 )));
 				System.out.println("block#:" +(blockNum-1));
 				System.out.println("data: "+Arrays.toString(Utility.getBytes(sendPacket.getData(),4,sendPacket.getLength())));
+				try {
+					sendReceiveSocket.receive(receivePacketACK);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+				// printing the info for the received ack
+				System.out.println("Acknowledgement received");
+				if(verboseMode){
+					System.out.println("From host: " + receivePacketACK.getAddress());
+					System.out.println("Host port: " + receivePacketACK.getPort());
+					len = receivePacketACK.getLength();
+					System.out.println("Length: " + len);
+					System.out.print("Containing: " );
+
+					// Form a String from the byte array.
+					String received = new String(receivePacketACK.getData(),0,len);   
+					System.out.println(received + "\n");
+				}
+				System.out.print("Containing Bytes: ");
+				System.arraycopy(receivePacketACK.getData(),0,opblock,0,4);
+				System.out.print("opcode: ");
+				System.out.println(Arrays.toString(Utility.getBytes(receivePacketACK.getData(),0,2)));
+				System.out.println("block#: " + Utility.getByteInt(opblock));
 			}
 
 
