@@ -32,9 +32,9 @@ public class ConnectionManager extends Thread{
 	public String received;
 	private boolean flag3=false;
 	private final String FILEPATH="c:/Users/";
-	public ConnectionManager(DatagramSocket receiveSocket, DatagramPacket receivedPacket, byte[] data,String filepath,String mode ){
+	public ConnectionManager( DatagramPacket receivedPacket, byte[] data,String filepath,String mode ){
 		this.receivePacket = receivedPacket;
-		this.receiveSocket = receiveSocket;
+		
 		this.filepath=FILEPATH+filepath;
 		this.mode=mode;
 		try {

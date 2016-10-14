@@ -13,10 +13,12 @@ import utilities.Utility;
 
 public class Server {
 
-	DatagramPacket sendPacket, receivePacket;
+	public DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket;
 	private boolean isReadRequest, isWriteRequest;
 	public static String mode=Constants.VERBOSE;
+	public static boolean received=false;
+	public static boolean shutdown;
 
 
 
@@ -40,8 +42,7 @@ public class Server {
 			se.printStackTrace();
 			System.exit(1);
 		} 
-
-
+		
 
 	}
 
@@ -54,13 +55,31 @@ public class Server {
 		String filepath=null;
 		for (;;){
 			// receiving a packet from the client  
-			byte data[] = new byte[100];
-			receivePacket = new DatagramPacket(data, data.length);
-			if(Utility.shutDown){
-				System.exit(1);
-			}
+			
+			//if(Utility.getShu()){
+				//System.out.println("Server shot down");
+				//System.exit(1);
+			//}
+			
+			
+		
+			//if(Utility.getReceived()){
+				//Utility.setReceived(false);
+				byte data[] = new byte[1400];
+				receivePacket = new DatagramPacket(data, data.length);
+				//receivePacket.setData(Utility.getData());
+				//receivePacket.setLength(Utility.getLength());
+				//receivePacket.setPort(Utility.getPort());
+				//receivePacket.setAddress(Utility.getAddress());
+				//System.out.println("hi");
+				//receivePacket=Utility.getPacket();
+			//System.out.println(""+receivePacket.getData());
 		
 			// Block until a datagram packet is received from receiveSocket.
+			
+			
+            // creating a thread that deals with a the receiving packet 
+			
 			try {        
 				
 				receiveSocket.receive(receivePacket);
@@ -70,10 +89,16 @@ public class Server {
 				e.printStackTrace();
 				System.exit(1);
 			}
-			filepath=getPath(receivePacket.getData());
-            // creating a thread that deals with a the receiving packet 
-			ConnectionManager connectionManagerThread = new ConnectionManager(receiveSocket, receivePacket, data,filepath,mode);
+			
+			ConnectionManager connectionManagerThread = new ConnectionManager( receivePacket,receivePacket.getData(),getPath(receivePacket.getData()),mode);
 			connectionManagerThread.start();
+		//}
+			//try{
+			//Thread.sleep(5000);
+			//}catch(Exception e){
+				//e.printStackTrace();
+				//System.exit(0);
+			//}
 		}
 	}
 
@@ -98,6 +123,8 @@ public class Server {
 	public static void main( String args[] )
 	{
 		Server c = new Server();
+		//Thread waitingThread=new WaitingThread();
+		//waitingThread.start();
 		Thread su=new ServerUI();
 		su.start();
 		try {
@@ -106,6 +133,11 @@ public class Server {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public static void kill() {
+		System.exit(1);
+		
 	}
 }
 
@@ -161,8 +193,9 @@ class ServerUI extends Thread
 
 				}
 				else if(input.equals(Constants.CMD_SHUTDOWN)){
-					Utility.shutDown=true;
-					//System.out.println("Server shut down");
+					Utility.setShut(true);
+					
+					System.out.print("Server Shut down");
 					//System.exit(0);
 				}else{
 					System.out.println("Command not recognized. Please try again.");
@@ -181,6 +214,58 @@ class ServerUI extends Thread
 		}
 	}
 
+}
+class WaitingThread extends Thread{
+	
+	 public static DatagramSocket receiveSocket;
+	public static DatagramPacket receivePacket;
+	public static boolean received;
+	public static byte data1[];
+	public WaitingThread(){
+		try {
+			// Construct a datagram socket and bind it to any available 
+			// port on the local host machine. This socket will be used to
+			// send UDP Datagram packets.
+
+
+			// Construct a datagram socket and bind it to port 69 
+			// on the local host machine. This socket will be used to
+			// receive UDP Datagram packets.
+			receiveSocket = new DatagramSocket(69);
+
+			// to test socket timeout (2 seconds)
+			//receiveSocket.setSoTimeout(2000);
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+		} 
+	}
+	public void run(){
+		byte data[] = new byte[1400];
+		receivePacket = new DatagramPacket(data, data.length);
+		for(;;){
+			
+		try {        
+			
+			receiveSocket.receive(receivePacket);
+		} catch (IOException e) {
+			System.out.print("IO Exception: likely:");
+			System.out.println("Receive Socket Timed Out.\n" + e);
+			e.printStackTrace();
+			System.exit(1);
+		}
+		System.out.println("the received Packet is: "+new String(data,0,receivePacket.getLength()));
+		Utility.setPacket(receivePacket);
+		Utility.setData(receivePacket.getData());
+		Utility.setLenght(receivePacket.getLength());
+		Utility.setReceived(true);
+		}
+		
+		
+	}
+	
+	
+	
 }
 
 

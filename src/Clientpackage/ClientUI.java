@@ -12,7 +12,7 @@ import utilities.Constants;
  */
 
 public class ClientUI {
-	static Client c = new Client();
+	
 	
 	 public static void main(String[] args) {
 
@@ -70,7 +70,7 @@ public class ClientUI {
 	                	requestType = Constants.READ_REQUEST;
 	                		
       	
-	                	System.out.print("Enter a relative file path: ");
+	                	System.out.print("Enter a relative file path to read from the service: ");
 	                	input = br.readLine();
 	                	filePath = input;
 	                	System.out.println();
@@ -90,8 +90,8 @@ public class ClientUI {
 	                	System.out.println();
 	                	
 	            
-	                	c.sendAndReceive(requestType, filePath,filewritepath,filePath2, vqMode, tnMode);
-	                	
+	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode));
+	                	thread.start();
 	                    
 	                } else if(input.equals(Constants.CMD_WRQ)){
 	                	requestType = Constants.WRITE_REQUEST;
@@ -116,8 +116,8 @@ public class ClientUI {
 	                	System.out.println();
 	                	
 	                	filePath2=null;
-	                	c.sendAndReceive(requestType, filePath,filewritepath,filePath2, vqMode, tnMode);
-	                	
+	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode));
+	                	thread.start();
 	                }
 	                
 	                
@@ -147,3 +147,4 @@ public class ClientUI {
 
 	    }
 }
+
