@@ -228,6 +228,7 @@ public class Client {
 					
 				ACK[2] = receivePacket.getData()[2];
 				ACK[3] = receivePacket.getData()[3];
+				//Here we will start writing to the file.
 				try {
 					out.write(receivePacket.getData(), 4,receivePacket.getLength()-4);
 				} catch (IOException e1) {

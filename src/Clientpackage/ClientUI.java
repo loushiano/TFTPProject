@@ -3,15 +3,17 @@ package Clientpackage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
+import java.io.FileNotFoundException;
 import utilities.Constants;
-
+import java.io.FileInputStream;
+import java.nio.file.AccessDeniedException;
 /*
  * Author: Sahaj Arora
  * This class provides user interface for a client to interact with the system.
  */
 
 public class ClientUI {
+
 	
 	
 	 public static void main(String[] args) {
@@ -23,7 +25,7 @@ public class ClientUI {
 	        String tnMode = Constants.NORMAL;
 
 	        try {
-
+	        		
 	            br = new BufferedReader(new InputStreamReader(System.in));
 
 	            while (true) {
@@ -68,14 +70,48 @@ public class ClientUI {
 	                else if (input.equals(Constants.CMD_RRQ) ){	                	
 	                	
 	                	requestType = Constants.READ_REQUEST;
-	                		
-      	
-	                	System.out.print("Enter a relative file path to read from the service: ");
-	                	input = br.readLine();
+	                	FileInputStream fis = null;
+	                	boolean correctPath = true;
+	                	AccessDeniedException adFile = null;
+	                	//enter the infite loop and check if we have the right path.
+	                	
+	                	System.out.print("Enter a relative file path to read from the server: ");
+	                	input = br.readLine();   
+
 	                	filePath = input;
 	                	System.out.println();
-	                	System.out.print("Enter a full file path to which u want to write the file on: ");
-	                	input = br.readLine();
+	                	
+	                	
+	                	for(;;){
+	                		
+		                	System.out.print("Enter a full file path to which u want to write the file on: ");
+	                		input = br.readLine();   
+	                		correctPath = true;
+	                		try{
+	                			//here we will get the file path.
+	                			fis = new FileInputStream(input);
+	                		}catch(FileNotFoundException e ){
+	                			correctPath = false;
+	                			System.out.println("File Not Found");
+	                			System.out.println("Please enter the correct file path");
+	                		}
+	                		
+	                		/*
+	                		try{
+	                			
+	                		}
+	                		catch (AccessDeniedException e ){
+	                			System.out.println("Access is deneid !");
+	                		}
+	                		
+	                		
+	                		*/
+	                		if(correctPath){
+	                			break;
+	                		}
+	                		
+	                	}
+
 	                	filePath2 = input;
 	                	System.out.println();
 	                	System.out.print("Enter mode (verbose or quiet): ");
@@ -92,15 +128,40 @@ public class ClientUI {
 	            
 	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode));
 	                	thread.start();
-	                    
+	                   // WRITE REQUEST ---------------------------------------------------------------------------------- 
 	                } else if(input.equals(Constants.CMD_WRQ)){
+	                	
 	                	requestType = Constants.WRITE_REQUEST;
-	                	System.out.print("Enter a full file path to read from: ");
-	                	input = br.readLine();
+	                	FileInputStream fis = null;
+	                	boolean correctPath = true;
+	                	
+	                	//enter the infite loop and check if we have the right path.
+	                	for(;;){
+	                		
+	                		System.out.print("Enter a full file path to read from: ");
+	                		input = br.readLine();   
+	                		correctPath = true;
+	                		try{
+	                			//here we will get the file path.
+	                			fis = new FileInputStream(input);
+	                		}catch(FileNotFoundException e ){
+	                			correctPath = false;
+	                			System.out.println("File Not Found");
+	                			System.out.println("Please enter the correct file path");
+	                		}
+
+	                		if(correctPath){
+	                			break;
+	                		}
+	                		
+	                	}
 	                	filePath = input;
 	                	System.out.println();
-	                	System.out.print("Enter a relative file path to write To:");
-	                	input = br.readLine();
+	                	
+	                	
+
+	                System.out.print("Enter a relative file path to write To:");
+	                input = br.readLine();   
 	                	filewritepath =input;
 	                	
 	                	System.out.println();
