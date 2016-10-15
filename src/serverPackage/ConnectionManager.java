@@ -2,6 +2,7 @@ package serverPackage;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,6 +11,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.Arrays;
+import java.nio.file.AccessDeniedException;
 
 import utilities.Constants;
 import utilities.Utility;
@@ -32,6 +34,8 @@ public class ConnectionManager extends Thread{
 	public String received;
 	private boolean flag3=false;
 	private final String FILEPATH="c:/Users/";
+	private boolean errorFlag;
+	private DatagramPacket errorPacket;
 	public ConnectionManager( DatagramPacket receivedPacket, byte[] data,String filepath,String mode ){
 		this.receivePacket = receivedPacket;
 		
@@ -117,10 +121,35 @@ public class ConnectionManager extends Thread{
 			BufferedInputStream in = null;
 			try {
 				in = new BufferedInputStream(new FileInputStream(filepath));
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new AccessDeniedException("access denied");
+			
+			} catch (FileNotFoundException| AccessDeniedException e) {
+				if(e instanceof AccessDeniedException){
+					byte error[]=new byte[100];
+					putError(error,2,"the file you are trying to read from can not be accessedt");
+					
+					errorPacket =new DatagramPacket(error,error.length,receivePacket.getAddress(),receivePacket.getPort());
+				}else{
+				//if there is an error of code 1, we form an error packet and we send it to the client
+				byte error[]=new byte[100];
+				putError(error,1,"the file you are trying to read from does not exist");
+				
+				errorPacket =new DatagramPacket(error,error.length,receivePacket.getAddress(),receivePacket.getPort());}
+				errorFlag=true;
+				
 			}
+			
+			if(errorFlag){
+				errorFlag=false;
+				try {
+					sendReceiveSocket.send(errorPacket);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+				System.out.println("error packet sent");
+			
+			}else{
 
 			// creating an array of data to send the data 
 			
@@ -298,6 +327,8 @@ public class ConnectionManager extends Thread{
 				}
 
 			}
+			
+			
 			}
 			catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -309,17 +340,56 @@ public class ConnectionManager extends Thread{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-				
+			}	
 			// checking if its write request 
 		} else if (isWriteRequest){
 	
 			BufferedOutputStream out=null;
+			//create a file with the file given by the client and catch the error if the file already exists
+			File f = new File(filepath);
+			if(f.exists() && !f.isDirectory()) { 
+				try{
+			   throw new Exception("file alread exists");
+				}catch (Exception e){
+					//if there is an error of code 1, we form an error packet and we send it to the client
+					byte error[]=new byte[100];
+					putError(error,6,"the file you are trying to write to already exists");
+					
+					errorPacket =new DatagramPacket(error,error.length,receivePacket.getAddress(),receivePacket.getPort());
+				   errorFlag=true;
+			   }
+				if(errorFlag){
+					errorFlag=false;
+					try {
+						sendReceiveSocket.send(errorPacket);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.exit(1);
+					}
+					
+					
+				}
+			}
 			try {
 				out =
 						new BufferedOutputStream(new FileOutputStream(filepath));
-			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			} catch (IOException e1) {
+				byte error[]=new byte[100];
+				putError(error,3,"no enough memory");
+				
+				errorPacket =new DatagramPacket(error,error.length,receivePacket.getAddress(),receivePacket.getPort());
+			   errorFlag=true;
+			}
+			if(errorFlag){
+				errorFlag=false;
+				try {
+					sendReceiveSocket.send(errorPacket);
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+				
+				
 			}
 			
 			// creating a an array data to recive the data from the client 
@@ -443,6 +513,12 @@ public class ConnectionManager extends Thread{
 
 
 
+	//this method takes a byte array, an error code and a string and it combines them all together
+	private void putError(byte[] error, int i, String string) {
+		byte msg[]=string.getBytes();
+		error[0]=0;error[1]=5;error[2]=0;error[3]=(byte)i;
+		System.arraycopy(msg, 0, error, 4, msg.length);
+	}
 
 	/**
 	 * Validate the request
