@@ -336,7 +336,7 @@ public class Client {
 
 		byte[] data1 = new byte[512];
 
-		byte[] ACK1 = new byte[4];
+		byte[] ACK1 = new byte[100];
 
 		byte [] opblock=new byte[4];
 
@@ -1046,7 +1046,7 @@ public class Client {
 
 		byte[] temp = new byte[error.length - 5];
 
-		for(int i = 4 ; i < error.length - 1; i++){
+		for(int i = 4 ; i < error.length - 6; i++){
 
 			temp[i] = error[i];
 
