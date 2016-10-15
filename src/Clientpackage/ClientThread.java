@@ -1,4 +1,8 @@
 package Clientpackage;
+
+import intermediateHost.IntermediateHost;
+import utilities.Constants;
+
 /*
  * this class is a thread that will contain the clients that we create
  */
@@ -19,6 +23,7 @@ public  class ClientThread implements Runnable{
 	@Override
 	public void run() {
 		Client c=new Client();
+		
 		c.sendAndReceive(reqType, filepath, filewritepath, readFilePath, vqMode, tnMode);
 		
 		

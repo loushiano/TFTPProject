@@ -124,7 +124,21 @@ public class ClientUI {
 	                	
 	                	vqMode = input;
 	                	System.out.println();
+	                	System.out.print("Enter mode (test or normal): ");
+	                	input = br.readLine();
 	                	
+	                	while (!(input.equals(Constants.TEST) || (input.equals(Constants.NORMAL)))){
+	                		System.out.print("Please enter correct mode (test or normal): ");
+		                	input = br.readLine();
+	                	}
+	                	
+	                	tnMode = input;
+	                	System.out.println();
+	                	if (tnMode.equals("test")){
+	                		
+	                		Thread thread1 =new Thread(new InterThread());
+	                		thread1.start();
+	                	}
 	            
 	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode));
 	                	thread.start();
@@ -174,6 +188,15 @@ public class ClientUI {
 	                	}
 	                	
 	                	vqMode = input;
+	                	System.out.println();
+	                	System.out.print("Enter mode (test or normal): ");
+	                	input = br.readLine();
+	                	while (!(input.equals(Constants.TEST) || (input.equals(Constants.NORMAL)))){
+	                		System.out.print("Please enter correct mode (test or normal): ");
+		                	input = br.readLine();
+	                	}
+	                	
+	                	tnMode = input;
 	                	System.out.println();
 	                	
 	                	filePath2=null;
