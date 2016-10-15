@@ -506,12 +506,14 @@ public class ConnectionManager extends Thread{
 		error[0]=0;error[1]=5;error[2]=0;error[3]=(byte)i;
 		System.arraycopy(msg, 0, error, 4, msg.length);
 		errorPacket =new DatagramPacket(error,error.length,receivePacket.getAddress(),receivePacket.getPort());
+		System.out.println(string);
 		try {
 			sendReceiveSocket.send(errorPacket);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
 		System.out.println("error packet sent");
 		
 		

@@ -621,6 +621,15 @@ public class Client {
 				System.exit(1);
 
 			}
+			if(checkError(receivePacketACK.getData())){
+
+				System.out.println();
+
+				printError(receivePacketACK.getData()); // yes there is an error.
+
+				return;
+
+			}
 
 			
 
@@ -785,6 +794,16 @@ public class Client {
 						e.printStackTrace();
 
 						System.exit(1);
+
+					}
+					
+					if(checkError(receivePacketACK.getData())){
+
+						System.out.println();
+
+						printError(receivePacketACK.getData()); // yes there is an error.
+
+						return;
 
 					}
 
