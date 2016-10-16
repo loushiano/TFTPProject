@@ -36,7 +36,10 @@ public class ClientUI {
 
 	
 
-	 public static void main(String[] args) {
+	 private static boolean flag;
+	private static boolean flag2;
+
+	public static void main(String[] args) {
 
 
 
@@ -144,16 +147,16 @@ public class ClientUI {
 
 	                	requestType = Constants.READ_REQUEST;
 
-	                	FileInputStream fis = null;
+	                	File fis = null;
 
 	                	boolean correctPath = true;
 
-	                	AccessDeniedException adFile = null;
+	                	//AccessDeniedException adFile = null;
 
 	                	//enter the infite loop and check if we have the right path.
 
 	                	
-
+	                	
 	                	System.out.print("Enter a relative file path to read from the server: ");
 
 	                	input = br.readLine();   
@@ -168,63 +171,53 @@ public class ClientUI {
 
 	                	
 
-	                	for(;;){
+	                	
 
-	                		
+	                	
 
 		                	System.out.print("Enter a full file path to which u want to write the file on: ");
 
 	                		input = br.readLine();   
 
-	                		correctPath = true;
-
+	                		
+	                		flag=true;
+	                		
+	                		while(flag){
+	                			
+	                			int i=0;
 	                		try{
 
 	                			//here we will get the file path.
 
-	                			fis = new FileInputStream(input);
+	                			fis = new File(input);
+	                			
+	                			if(!fis.createNewFile()){
+	                				System.out.println(" the file you are trying to create already exists please try again");
+	                				
+	                				i=1;
+	                			}
+	                		}catch(IOException e ){
+	                				i=1;
+	                			
 
-	                		}catch(FileNotFoundException e ){
+	                			System.out.println("the path you want to create the file in can not be accessed please try again");
 
-	                			correctPath = false;
-
-	                			System.out.println("File Not Found");
-
-	                			System.out.println("Please enter the correct file path");
-
+	                			
+	                			
 	                		}
-
+	                		if(i==0){
+	                			flag=false;
+	                		}else{
+	                			input = br.readLine(); 
+	                		}
+	                		
+	                		
+	                		
+	                		}
+	                		filePath2 = input;
 	                		
 
-	                		File file = new File(input);
-
 	                		
-
-	                		if(file.canWrite() && correctPath){
-
-	                			System.out.println("You are allowed to write to this file");
-
-	                		}else if (correctPath){
-
-	                			System.out.println("You are not allowed to write to this file");
-
-	                			correctPath = false;
-
-	                		}
-
-	        
-
-	                		if(correctPath){
-
-	                			break;
-
-	                		}
-
-	                	}
-
-
-
-	                	filePath2 = input;
 
 	                	System.out.println();
 
@@ -264,15 +257,13 @@ public class ClientUI {
 
 	                	requestType = Constants.WRITE_REQUEST;
 
-	                	FileInputStream fis = null;
-
-	                	boolean correctPath = true;
+	                	
 
 	                	
 
 	                	//enter the infite loop and check if we have the right path.
 
-	                	for(;;){
+	                	
 
 	                		
 
@@ -280,8 +271,11 @@ public class ClientUI {
 
 	                		input = br.readLine();   
 
-	                		correctPath = true;
-
+	                		
+	                		FileInputStream fis=null;
+	                		flag2=true;
+	                		while(flag2){
+	                			int j=0;
 	                		try{
 
 	                			//here we will get the file path.
@@ -290,25 +284,25 @@ public class ClientUI {
 
 	                		}catch(FileNotFoundException e ){
 
-	                			correctPath = false;
+	                			
 
 	                			System.out.println("File Not Found");
 
 	                			System.out.println("Please enter the correct file path");
-
+	                				j=1;
+	                		}
+	                		if(j==0){
+	                			flag2=false;
+	                		}else{
+	                			input = br.readLine(); 
+	                		}
 	                		}
 
 
-
-	                		if(correctPath){
-
-	                			break;
-
-	                		}
 
 	                		
 
-	                	}
+	                	
 
 	                
 

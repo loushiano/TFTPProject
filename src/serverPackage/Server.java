@@ -16,6 +16,7 @@ public class Server {
 	public DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket;
 	private boolean isReadRequest, isWriteRequest;
+	public static boolean notShotDown=true;
 	public static String mode=Constants.VERBOSE;
 	public static boolean received=false;
 	public static boolean shutdown;
@@ -42,6 +43,12 @@ public class Server {
 			se.printStackTrace();
 			System.exit(1);
 		} 
+		try {
+			receiveSocket.setSoTimeout(10000);
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 
 	}
@@ -52,8 +59,9 @@ public class Server {
 	 */
 	public void receiveAndRespond() throws Exception
 	{
-		String filepath=null;
-		for (;;){
+		
+		while (notShotDown){
+			int checker=0;//to check if we received or not
 			// receiving a packet from the client  
 			
 			//if(Utility.getShu()){
@@ -83,15 +91,15 @@ public class Server {
 			try {        
 				
 				receiveSocket.receive(receivePacket);
-			} catch (IOException e) {
-				System.out.print("IO Exception: likely:");
-				System.out.println("Receive Socket Timed Out.\n" + e);
-				e.printStackTrace();
-				System.exit(1);
+			} catch (SocketTimeoutException e) {
+				checker=1;
+				
 			}
-			
+			if(checker==0){
 			ConnectionManager connectionManagerThread = new ConnectionManager( receivePacket,receivePacket.getData(),getPath(receivePacket.getData()),mode);
-			connectionManagerThread.start();
+			connectionManagerThread.start();}else{
+				
+			}
 		//}
 			//try{
 			//Thread.sleep(5000);
@@ -100,6 +108,7 @@ public class Server {
 				//System.exit(0);
 			//}
 		}
+		System.out.println("System is shot down");
 	}
 
 
@@ -193,9 +202,9 @@ class ServerUI extends Thread
 
 				}
 				else if(input.equals(Constants.CMD_SHUTDOWN)){
-					Utility.setShut(true);
+					Server.notShotDown=false;
 					
-					System.out.print("Server Shut down");
+					
 					//System.exit(0);
 				}else{
 					System.out.println("Command not recognized. Please try again.");
@@ -214,58 +223,6 @@ class ServerUI extends Thread
 		}
 	}
 
-}
-class WaitingThread extends Thread{
-	
-	 public static DatagramSocket receiveSocket;
-	public static DatagramPacket receivePacket;
-	public static boolean received;
-	public static byte data1[];
-	public WaitingThread(){
-		try {
-			// Construct a datagram socket and bind it to any available 
-			// port on the local host machine. This socket will be used to
-			// send UDP Datagram packets.
-
-
-			// Construct a datagram socket and bind it to port 69 
-			// on the local host machine. This socket will be used to
-			// receive UDP Datagram packets.
-			receiveSocket = new DatagramSocket(69);
-
-			// to test socket timeout (2 seconds)
-			//receiveSocket.setSoTimeout(2000);
-		} catch (SocketException se) {
-			se.printStackTrace();
-			System.exit(1);
-		} 
-	}
-	public void run(){
-		byte data[] = new byte[1400];
-		receivePacket = new DatagramPacket(data, data.length);
-		for(;;){
-			
-		try {        
-			
-			receiveSocket.receive(receivePacket);
-		} catch (IOException e) {
-			System.out.print("IO Exception: likely:");
-			System.out.println("Receive Socket Timed Out.\n" + e);
-			e.printStackTrace();
-			System.exit(1);
-		}
-		System.out.println("the received Packet is: "+new String(data,0,receivePacket.getLength()));
-		Utility.setPacket(receivePacket);
-		Utility.setData(receivePacket.getData());
-		Utility.setLenght(receivePacket.getLength());
-		Utility.setReceived(true);
-		}
-		
-		
-	}
-	
-	
-	
 }
 
 

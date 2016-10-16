@@ -512,7 +512,8 @@ public class Client {
 
 					
 
-					e1.printStackTrace();
+					System.out.println("no enough memory in the directory of the output file, the file transfer will be stopped and you can write a new command");
+					return;
 
 				}
 
@@ -574,9 +575,8 @@ public class Client {
 
 			} catch (IOException e) {
 
-				// TODO Auto-generated catch block
-
-				e.printStackTrace();
+				System.out.println("at the end of the writing the memory limist was exeeded");
+				return;
 
 			}
 
@@ -1074,6 +1074,7 @@ public class Client {
 		String s = new String(temp);
 
 		System.out.println(s);
+		System.out.println("you can enter a new command");
 
 	}
 

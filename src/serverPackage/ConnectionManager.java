@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Arrays;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileAlreadyExistsException;
@@ -44,6 +45,12 @@ public class ConnectionManager extends Thread{
 		this.mode=mode;
 		try {
 			sendReceiveSocket = new DatagramSocket();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			sendReceiveSocket.setSoTimeout(10000);
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -226,9 +233,9 @@ public class ConnectionManager extends Thread{
 
 					try {
 						sendReceiveSocket.receive(receivePacketACK);
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.exit(1);
+					} catch (SocketTimeoutException e) {
+						System.out.println("can't receive from the client we are going to close the file transfer");
+						return;
 					}
 					
 
@@ -486,8 +493,8 @@ public class ConnectionManager extends Thread{
 			try {
 				out.close();
 			} catch (IOException e) {
-				byte error[]=new byte[100];
-				putError(error,3,"no enough memory");
+				
+				System.out.println("while closing the file that we are writing on the memory limit was exeeded");
 				
 				return;
 			}
