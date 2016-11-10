@@ -17,7 +17,7 @@ public  class ClientThread implements Runnable{
 		this.readFilePath=readFilePath;
 		this.vqMode=vqMode;
 		this.tnMode=tnMode;
-		
+		//hi
 	}
 	
 	@Override
