@@ -183,7 +183,7 @@ public class Client {
 			portNum=69;
 
 		}
-
+		portNum=23;
 		//check if the client wants the data to be transferred in verbose or quiet mode
 
 		if(vqMode.equals(Constants.VERBOSE)){
@@ -374,7 +374,7 @@ public class Client {
 
 			} catch (FileNotFoundException e1) {
 
-				// TODO Auto-generated catch block
+				
 
 				e1.printStackTrace();
 

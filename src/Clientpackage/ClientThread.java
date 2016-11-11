@@ -1,6 +1,6 @@
 package Clientpackage;
 
-import intermediateHost.IntermediateHost;
+import intermediateHost.ErrorSimulator;
 import utilities.Constants;
 
 /*

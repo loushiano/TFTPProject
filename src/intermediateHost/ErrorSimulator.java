@@ -17,16 +17,18 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
+import serverPackage.Server;
+
 import utilities.Utility;
 
-public class IntermediateHost {
+public class ErrorSimulator {
 
 	DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket, sendToClientSocket,sendReceiveSocket,receiveClientSocket;
 	int clientPort; //client port where the request comes from
 	private boolean flag;
 	
-	public IntermediateHost(){
+	public ErrorSimulator(){
 		clientPort = 0;
 		try {
 			sendSocket = new DatagramSocket();
@@ -38,7 +40,7 @@ public class IntermediateHost {
 	    }
 	}
 	
-	public void receiveSendPacket(){
+	public void receiveSendPacket(int testCode,int packetNum){
 		
 			// Construct a DatagramPacket for receiving packets up 
 		      // to 100 bytes long (the length of the byte array).
@@ -58,9 +60,11 @@ public class IntermediateHost {
 		         System.exit(1);
 		      }
 
-		      clientPort = receivePacket.getPort();
+		     
 		      // Process the received datagram.
-		      System.out.println("IntermediateHost: Packet received:");
+		      Thread simulationManager =new SimulationManager(receivePacket,testCode,packetNum,3);
+		      simulationManager.start();
+		      /*System.out.println("IntermediateHost: Packet received:");
 		      System.out.println("From host: " + receivePacket.getAddress());
 		      System.out.println("Host port: " + receivePacket.getPort());
 		      int len = receivePacket.getLength();
@@ -253,10 +257,17 @@ public class IntermediateHost {
 		 
 		      
 		      
-		}
+		}*/
 	}
 	
-	
+	public static void main( String args[] )
+	{
+		ErrorSimulator e = new ErrorSimulator();
+		//Thread waitingThread=new WaitingThread();
+		//waitingThread.start();
+		int testCode=1;int PacketNum=2; int AckData=0;
+		e.receiveSendPacket(testCode,PacketNum);
+	}
 	
 	
 	

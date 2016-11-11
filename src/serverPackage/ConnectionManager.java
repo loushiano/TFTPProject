@@ -234,6 +234,7 @@ public class ConnectionManager extends Thread{
 					try {
 						sendReceiveSocket.receive(receivePacketACK);
 					} catch (SocketTimeoutException e) {
+						
 						System.out.println("can't receive from the client we are going to close the file transfer");
 						return;
 					}
