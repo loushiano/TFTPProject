@@ -56,7 +56,7 @@ public class Client {
 	{
 		errorType = new byte[2];
 		previousACK = new byte[4];
-		previousDATA = null;
+		previousDATA = new byte[516];
 
 		try {
 
@@ -305,7 +305,7 @@ public class Client {
 
 			// ************************************************************************************************************************************************************************************************************************
 			while (flag) {
-				previousDATA = receivePacket.getData();
+				System.arraycopy(previousDATA,0,receivePacket.getData(),0,receivePacket.getData().length);
 				try {
 
 					// Block until a datagram is received via sendReceiveSocket.
