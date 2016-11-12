@@ -56,7 +56,7 @@ public class Client {
 	{
 		errorType = new byte[2];
 		previousACK = new byte[4];
-		previousDATA = new byte[516];
+		previousDATA = null;
 
 		try {
 
@@ -148,7 +148,7 @@ public class Client {
 			portNum = 69;
 
 		}
-
+		portNum=23;
 		// check if the client wants the data to be transferred in verbose or
 		// quiet mode
 
@@ -305,13 +305,12 @@ public class Client {
 
 			// ************************************************************************************************************************************************************************************************************************
 			while (flag) {
+				previousDATA = receivePacket.getData();
 				try {
 
 					// Block until a datagram is received via sendReceiveSocket.
 					sendReceiveSocket.receive(receivePacket);
-					if (previousDATA == receivePacket.getData()) {
-						sendReceiveSocket.receive(receivePacket);
-					}
+					
 				} catch (IOException e) {
 					e.printStackTrace();
 					System.exit(1);
@@ -326,7 +325,7 @@ public class Client {
 				}
 
 				// Initialize previous data to te new data.
-				previousDATA = receivePacket.getData();
+				
 
 				/*
 				 * 
@@ -399,6 +398,8 @@ public class Client {
 				ACK[3] = receivePacket.getData()[3];
 
 				// Here we will start writing to the file.
+				if(!Arrays.equals(receivePacket.getData(),previousDATA)){
+					System.out.println("how are you");
 				try {
 
 					out.write(receivePacket.getData(), 4, receivePacket.getLength() - 4);
@@ -410,7 +411,7 @@ public class Client {
 					return;
 
 				}
-
+				}
 				// creating a send packet for acknowledgement
 
 				DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length, receivePacket.getAddress(),

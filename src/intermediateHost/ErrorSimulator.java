@@ -15,6 +15,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import serverPackage.Server;
@@ -40,7 +41,7 @@ public class ErrorSimulator {
 	    }
 	}
 	
-	public void receiveSendPacket(int testCode,int packetNum){
+	public void receiveSendPacket(int testCode,int packetNum,int AckData){
 		
 			// Construct a DatagramPacket for receiving packets up 
 		      // to 100 bytes long (the length of the byte array).
@@ -62,7 +63,7 @@ public class ErrorSimulator {
 
 		     
 		      // Process the received datagram.
-		      Thread simulationManager =new SimulationManager(receivePacket,testCode,packetNum,3);
+		      Thread simulationManager =new SimulationManager(receivePacket,testCode,packetNum,AckData);
 		      simulationManager.start();
 		      /*System.out.println("IntermediateHost: Packet received:");
 		      System.out.println("From host: " + receivePacket.getAddress());
@@ -70,7 +71,6 @@ public class ErrorSimulator {
 		      int len = receivePacket.getLength();
 		      System.out.println("Length: " + len);
 		      System.out.print("Containing: " );
-
 		      // Form a String from the byte array.
 		      String received = new String(data,0,len);   
 		      System.out.println(received + "\n");
@@ -86,7 +86,6 @@ public class ErrorSimulator {
 		      }
 		 
 		      // Send packet to server
-
 		      try {
 				sendPacket = new DatagramPacket(data, receivePacket.getLength(),
 						  InetAddress.getLocalHost(), 69);
@@ -94,7 +93,6 @@ public class ErrorSimulator {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
 		      System.out.println( "IntermediateHost: Sending packet:");
 		      System.out.println("To Server: " + sendPacket.getAddress());
 		      System.out.println("Destination host port: " + sendPacket.getPort());
@@ -112,7 +110,6 @@ public class ErrorSimulator {
 		         e.printStackTrace();
 		         System.exit(1);
 		      }
-
 		      System.out.println("IntermediateHost: packet sent to Server");
 		      
 		      
@@ -134,7 +131,6 @@ public class ErrorSimulator {
 		         e.printStackTrace();
 		         System.exit(1);
 		      }
-
 		    
 		      // Process the received datagram.
 		      System.out.println("IntermediateHost: Packet received:");
@@ -173,7 +169,6 @@ public class ErrorSimulator {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-
 			      System.out.println( "IntermediateHost: Sending packet:");
 			      System.out.println("To Client: " + sendPacket.getAddress());
 			      System.out.println("Destination host port: " + sendPacket.getPort());
@@ -191,7 +186,6 @@ public class ErrorSimulator {
 			         e.printStackTrace();
 			         System.exit(1);
 			      }
-
 			      System.out.println("IntermediateHost: packet sent to Client");
 			      data = new byte[516];
 			      DatagramPacket receiveclientPacket = new DatagramPacket(data, data.length);
@@ -206,7 +200,6 @@ public class ErrorSimulator {
 				         e.printStackTrace();
 				         System.exit(1);
 				      }
-
 				      
 				      // Process the received datagram.
 				      System.out.println("IntermediateHost: Packet received:");
@@ -249,7 +242,6 @@ public class ErrorSimulator {
 				         e.printStackTrace();
 				         System.exit(1);
 				      }
-
 				      System.out.println("IntermediateHost: packet sent to Server");
 				      
 			      
@@ -265,8 +257,9 @@ public class ErrorSimulator {
 		ErrorSimulator e = new ErrorSimulator();
 		//Thread waitingThread=new WaitingThread();
 		//waitingThread.start();
-		int testCode=1;int PacketNum=2; int AckData=0;
-		e.receiveSendPacket(testCode,PacketNum);
+		ErrorSimulatorUI ui=new ErrorSimulatorUI();
+		ArrayList<Integer> results=ui.run();
+		e.receiveSendPacket(results.get(0),results.get(1),results.get(2));
 	}
 	
 	

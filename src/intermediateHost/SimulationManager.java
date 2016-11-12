@@ -20,7 +20,7 @@ public class SimulationManager extends Thread {
 	private int AckData;
 	private int counter;
 	private DatagramPacket receiveclientPacket;
-	private boolean flagsendClient,flagReceiveClient,flagReceiveServer,flagSendServer=true;
+	private boolean flagsendClient,flagReceiveClient,flagReceiveServer;
 	private DatagramPacket delayedData,delayedAck,delayed;
 	private int timer;
 	private boolean flagSendToServer=true;
@@ -43,6 +43,8 @@ public class SimulationManager extends Thread {
 		 counter=0;
 		 delayedData=null;
 		 delayedAck=null;
+		 flagsendClient=true;
+		 flagReceiveClient=true;
 	}
 	@Override
 	public void run(){
@@ -116,11 +118,15 @@ public class SimulationManager extends Thread {
 			         System.exit(1);
 			      }
 			      	//Simulate errors
+			      /*
 			      	if(testCode!=0 && counter==packetNum){
+			      		
 			      		if(testCode==1 && receivePacket.getLength()>4 && AckData==1){
+			      			System.out.println("kol khara");
 			      			System.out.println("Data packet received from the server is being lost, will wait for another data again");
 			      		continue start;
 			      		}else if(testCode==1 && receivePacket.getLength()==4 && AckData==0 ){
+			      			System.out.println("kol khara");
 			      			flagsendClient=false;flagReceiveClient=true;
 			      		}else if(testCode==2 && receivePacket.getLength()>4 && AckData==1){
 			      			 delayedData=receivePacket;
@@ -149,7 +155,7 @@ public class SimulationManager extends Thread {
 				      		
 				      	}
 				      	}
-
+			*/
 			    
 			      // Process the received datagram.
 			      System.out.println("IntermediateHost: Packet received:");
@@ -213,19 +219,20 @@ public class SimulationManager extends Thread {
 			      		receiveFromClient(flagReceiveClient);
 			      		
 			      	 	if(testCode!=0 && counter==packetNum){
+			      	 		System.out.println("kol");
 				      		if(testCode==1 && receiveclientPacket.getLength()>4 && AckData==1){
 				      			System.out.println("Data packet received from the client is being lost, will wait for another data from it again");
 				      			receiveFromClient(true);
 				      		}else if(testCode==1 && receiveclientPacket.getLength()==4 && AckData==0 ){
 				      			System.out.println("Ack packet received from the client is being lost, will wait for another data from the server again");
-				      			flagSendServer=false;
+				      			flagSendToServer=false;
 				      		}else if(testCode==2 && receiveclientPacket.getLength()>4 && AckData==1){
 				      			 delayedData=receivePacket;
 				      			 timer=(int) System.currentTimeMillis();
-				      			flagSendServer=false;
+				      			flagSendToServer=false;
 				      			
 				      		}else if(testCode==2 && receiveclientPacket.getLength()==4 && AckData==0){
-				      			flagSendServer=false;
+				      			flagSendToServer=false;
 				      			timer=(int) System.currentTimeMillis();
 				      			delayedAck=receivePacket;
 				      		}else if(testCode==3 && ((receiveclientPacket.getLength()==4 && AckData==0) ||(receiveclientPacket.getLength()>4 && AckData==1 ))){
@@ -264,7 +271,7 @@ public class SimulationManager extends Thread {
 					      
 					      // Process the received datagram.
 					      System.out.println("IntermediateHost: Packet received:");
-					      System.out.println("From host: " + receiveclientPacket.getAddress());
+s					      System.out.println("From host: " + receiveclientPacket.getAddress());
 					      System.out.println("Host port: " + receiveclientPacket.getPort());
 					      len = receiveclientPacket.getLength();
 					      System.out.println("Length: " + len);
@@ -359,7 +366,7 @@ public class SimulationManager extends Thread {
 
 	      System.out.println("IntermediateHost: packet sent to Server");
 			}else{
-				flagSendServer=true;
+				flagSendToServer=true;
 			}
 	}	
 	public void sendToClient(boolean flag,DatagramPacket delayed){
@@ -405,7 +412,7 @@ public class SimulationManager extends Thread {
 	       receiveclientPacket = new DatagramPacket(data, data.length);
 	      
 	      try {        
-	    	  receiveClientSocket=new DatagramSocket();
+	    	  	
 		         System.out.println("Waiting..."); // so we know we're waiting
 		         sendToClientSocket.receive(receiveclientPacket);
 		      } catch (IOException e) {

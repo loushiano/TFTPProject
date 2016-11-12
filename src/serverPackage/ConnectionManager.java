@@ -38,7 +38,8 @@ public class ConnectionManager extends Thread {
 	private DatagramPacket errorPacket;
 	private static final int TIMEOUT = 5000;
 	byte[] previousACK, previousDATA;
-
+	private boolean notreceived=false;
+	private DatagramPacket sendPacketDATA;
 	public ConnectionManager(DatagramPacket receivedPacket, byte[] data, String filepath, String mode) {
 		this.receivePacket = receivedPacket;
 
@@ -108,12 +109,6 @@ public class ConnectionManager extends Thread {
 		}
 
 		// Slow things down (wait 1.5 seconds)
-		try {
-			Thread.sleep(1500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
 
 		// Create a response byte array
 		// 0301 for a read request
@@ -192,11 +187,11 @@ public class ConnectionManager extends Thread {
 						System.arraycopy(data1, 0, responseData, 4, j);
 
 					}
-
+					if(!notreceived){
 					// creating a send packet
-					DatagramPacket sendPacketDATA = new DatagramPacket(responseData, responseData.length,
+					 sendPacketDATA = new DatagramPacket(responseData, responseData.length,
 							receivePacket.getAddress(), receivePacket.getPort());
-
+					}
 					// printing the info of the sending data
 					System.out.println("Server: Sending Data:");
 					if (mode.equals(Constants.VERBOSE)) {
@@ -220,6 +215,7 @@ public class ConnectionManager extends Thread {
 
 					data1 = new byte[512];
 					// creating a packet to receive the acknowlegment
+					ACK =new byte[4];
 					DatagramPacket receivePacketACK = new DatagramPacket(ACK, ACK.length);
 
 					// send data
@@ -241,12 +237,15 @@ public class ConnectionManager extends Thread {
 
 					try {
 						sendReceiveSocket.receive(receivePacketACK);
-						if (previousACK == receivePacketACK.getData()) {
-							sendReceiveSocket.receive(receivePacketACK);
-						}
+						//if (previousACK == receivePacketACK.getData()) {
+							//sendReceiveSocket.receive(receivePacketACK);
+						//}
+						notreceived=false;
 					} catch (Exception e1) {
 						if (e1 instanceof SocketTimeoutException) {
 							try {
+								System.out.println("hi");
+								notreceived=true;
 								sendReceiveSocket.send(sendPacketDATA);
 							} catch (Exception e3) {
 								if (e3 instanceof SocketTimeoutException) {
@@ -255,9 +254,13 @@ public class ConnectionManager extends Thread {
 									System.out.println("Socket has been Timed out while sending the DATA packet.");
 								}
 							}
+							
+							
 						}
+							
+						
 					}
-
+						
 					/*
 					 * Your Exception Ali! try {
 					 * sendReceiveSocket.receive(receivePacketACK); }
@@ -271,7 +274,7 @@ public class ConnectionManager extends Thread {
 					 * be after checking ur errors for packets
 					 */
 					previousACK = receivePacketACK.getData();
-
+					if(!notreceived){
 					System.out.println("Server: Acknowledgement received:");
 
 					if (mode.equals(Constants.VERBOSE)) {
@@ -290,7 +293,7 @@ public class ConnectionManager extends Thread {
 
 						System.out.println("block#: " + Utility.getByteInt(receivePacketACK.getData()));
 					}
-
+					}
 				}
 				if (!flag3) {
 					/*
