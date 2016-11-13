@@ -11,6 +11,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import utilities.Constants;
@@ -42,9 +43,10 @@ public class ConnectionManager extends Thread {
 	private DatagramPacket receivePacketACK;
 	private DatagramPacket sendPacketDATA;
 	private byte[] ACK,responseData,data1; 
+	private ArrayList<Integer> previousACKs;
 	public ConnectionManager(DatagramPacket receivedPacket, byte[] data, String filepath, String mode) {
 		this.receivePacket = receivedPacket;
-
+		previousACKs=new  ArrayList<Integer>();
 		this.filepath = FILEPATH + filepath;
 		this.mode = mode;
 		try {
@@ -199,6 +201,22 @@ public class ConnectionManager extends Thread {
 					while(!notreceived){
 						sendData(notreceived);
 						notreceived=receiveData();
+					}
+					if(previousACKs.contains(Utility.getByteInt(receivePacketACK.getData()))){
+						System.out.println("an Ack that we have already received has been received again, we must ignore it");
+						
+						
+						
+					}else {
+						
+					
+					if(previousACKs.size()<=20){
+						System.out.println("hi");
+						previousACKs.add(Utility.getByteInt(receivePacketACK.getData()));
+					}else{
+						previousACKs.remove(0);
+						previousACKs.add(Utility.getByteInt(receivePacketACK.getData()));
+					}
 					}
 					
 				}
@@ -521,6 +539,7 @@ public class ConnectionManager extends Thread {
 				try {
 					sendReceiveSocket.send(sendPacketDATA);
 				} catch (Exception e) {
+					return;
 					
 				}
 
@@ -537,6 +556,7 @@ public class ConnectionManager extends Thread {
 			
 		} catch (Exception e1) {
 			if (e1 instanceof SocketTimeoutException) {
+				System.out.println("the server timedout while waiting for receiving an ack from the client, it will retransmit data");
 				return false;
 			}
 				

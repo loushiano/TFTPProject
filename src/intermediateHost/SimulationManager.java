@@ -21,7 +21,7 @@ public class SimulationManager extends Thread {
 	private int counter;
 	private DatagramPacket receiveclientPacket;
 	private boolean flagsendClient,flagReceiveClient,flagReceiveServer;
-	private DatagramPacket delayedData,delayedAck,delayed;
+	private DatagramPacket delayedData,delayedAck,delayed,duplicated;
 	private int timer;
 	private boolean flagSendToServer=true;
 	
@@ -62,14 +62,7 @@ public class SimulationManager extends Thread {
 	      System.out.println("Containing Bytes: ");
 	      System.out.println(Arrays.toString(Utility.getBytes(receivePacket.getData(),0, len)));
 	      
-	      // Slow things down (wait 5 seconds)
-	      /*
-	      try {
-	          Thread.sleep(1000);
-	      } catch (InterruptedException e ) {
-	          e.printStackTrace();
-	          System.exit(1);
-	      }*/
+	      
 	      
 	      try {
 				sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
@@ -118,7 +111,7 @@ public class SimulationManager extends Thread {
 			         System.exit(1);
 			      }
 			      	//Simulate errors
-			      /*
+			      
 			      	if(testCode!=0 && counter==packetNum){
 			      		
 			      		if(testCode==1 && receivePacket.getLength()>4 && AckData==1){
@@ -155,7 +148,7 @@ public class SimulationManager extends Thread {
 				      		
 				      	}
 				      	}
-			*/
+			
 			    
 			      // Process the received datagram.
 			      System.out.println("IntermediateHost: Packet received:");
@@ -174,52 +167,17 @@ public class SimulationManager extends Thread {
 			      System.out.println(received + "\n");
 			     
 			      
-			      // Slow things down (wait 5 seconds)
-			      /*
-			      try {
-			          Thread.sleep(1000);
-			      } catch (InterruptedException e ) {
-			          e.printStackTrace();
-			          System.exit(1);
-			      }*/
-			      
+			    
 			      
 			      
 			      
 			      //Send packet to client
 			      sendToClient(flagsendClient,null);
-			      /*
-			      try {
-						sendPacket = new DatagramPacket(data, receivePacket.getLength(),
-								  InetAddress.getLocalHost(), clientPort);
-					} catch (UnknownHostException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-				      System.out.println( "IntermediateHost: Sending packet:");
-				      System.out.println("To Client: " + sendPacket.getAddress());
-				      System.out.println("Destination host port: " + sendPacket.getPort());
-				      len = sendPacket.getLength();
-				      System.out.println("Length: " + len);
-				      System.out.print("Containing: ");
-				      System.out.println(new String(sendPacket.getData(),0,len));
-				      
-				      // Send the datagram packet to the client via the send socket.
-				      
-				      try {
-				    	  sendToClientSocket = new DatagramSocket();
-				         sendToClientSocket.send(sendPacket);
-				      } catch (IOException e) {
-				         e.printStackTrace();
-				         System.exit(1);
-				      }
-
-				      System.out.println("IntermediateHost: packet sent to Client");*/
+			 
 			      		receiveFromClient(flagReceiveClient);
 			      		
 			      	 	if(testCode!=0 && counter==packetNum){
-			      	 		System.out.println("kol");
+			      	 		
 				      		if(testCode==1 && receiveclientPacket.getLength()>4 && AckData==1){
 				      			System.out.println("Data packet received from the client is being lost, will wait for another data from it again");
 				      			receiveFromClient(true);
@@ -232,92 +190,50 @@ public class SimulationManager extends Thread {
 				      			flagSendToServer=false;
 				      			
 				      		}else if(testCode==2 && receiveclientPacket.getLength()==4 && AckData==0){
+				      			System.out.println("Ack packet received from the client is being delayed, will wait for another data from the server again");
 				      			flagSendToServer=false;
 				      			timer=(int) System.currentTimeMillis();
-				      			delayedAck=receivePacket;
+				      			delayedAck=receiveclientPacket;
 				      		}else if(testCode==3 && ((receiveclientPacket.getLength()==4 && AckData==0) ||(receiveclientPacket.getLength()>4 && AckData==1 ))){
+				      			System.out.println("duplicating the ack");
+				      			duplicated=receiveclientPacket;
+				      			timer=(int) System.currentTimeMillis();
 				      			
-				      			sendBackToServer(true,null);
 				      		}
 				      	}
 				      	if(delayedData!=null){
-				      	if((timer+5000)==(int)System.currentTimeMillis()){
+				      	if((timer+5010)==(int)System.currentTimeMillis()){
 				      		sendBackToServer(true,delayedData);
 				      		delayedData=null;
 				      	}
 				      	}
 				      	if(delayedAck!=null){
-					      	if((timer+5000)==(int)System.currentTimeMillis()){
+				      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
+					      	if((timer+5010)<(int)System.currentTimeMillis()){
+					      		System.out.println("send the delayed ACK again");
+					      		
 					      		sendBackToServer(true,delayedAck);
+					      		flagSendToServer=false;
 					      		delayedAck=null;
 					      		
 					      	}
 					      	}
+				      	if(duplicated!=null){
+				      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
+					      	if((timer+1)<(int)System.currentTimeMillis()){
+					      		System.out.println("send the duplicated ACK again");
+					      		
+					      		sendBackToServer(true,duplicated);
+					      		flagSendToServer=false;
+					      		duplicated=null;
+					      		
+					      	}
+					      	}
+				      	
 			      		
-				      /*data = new byte[516];
-				      DatagramPacket receiveclientPacket = new DatagramPacket(data, data.length);
-				      
-				      try {        
-				    	  receiveClientSocket=new DatagramSocket();
-					         System.out.println("Waiting..."); // so we know we're waiting
-					         sendToClientSocket.receive(receiveclientPacket);
-					      } catch (IOException e) {
-					         System.out.print("IO Exception: likely:");
-					         System.out.println("Receive Socket Timed Out.\n" + e);
-					         e.printStackTrace();
-					         System.exit(1);
-					      }
-
-					      
-					      // Process the received datagram.
-					      System.out.println("IntermediateHost: Packet received:");
-s					      System.out.println("From host: " + receiveclientPacket.getAddress());
-					      System.out.println("Host port: " + receiveclientPacket.getPort());
-					      len = receiveclientPacket.getLength();
-					      System.out.println("Length: " + len);
-					      System.out.print("Containing: " );
-					      if((len!=4 && len!=516)||Utility.containsAzero(data, 4,len)){
-					    	  flag=false;
-					    	  
-					    	  
-					      }
-					      // Form a String from the byte array.
-					       received = new String(receiveclientPacket.getData(),0,len);   
-					      System.out.println(received + "\n");
-					      
-					      
-					      // Slow things down (wait 5 seconds)
-					       * */
+				   
 					      sendBackToServer(flagSendToServer,null);
-					      /*try {
-								sendPacket = new DatagramPacket(receiveclientPacket.getData(), receiveclientPacket.getLength(),
-										  InetAddress.getLocalHost(),receivePacket.getPort());
-							} catch (UnknownHostException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-					      System.out.println( "IntermediateHost: Sending packet:");
-					      System.out.println("To Server: " + receivePacket.getAddress());
-					      System.out.println("Destination host port: " + receivePacket.getPort());
-					      len = receiveclientPacket.getLength();
-					      System.out.println("Length: " + len);
-					      System.out.print("Containing: ");
-					      System.out.println(new String(receiveclientPacket.getData(),0,len));
-					      // Send the datagram packet to the client via the send socket. 
-					      try {
-					    	  
-					         sendReceiveSocket.send(sendPacket);
-					      } catch (IOException e) {
-					         e.printStackTrace();
-					         System.exit(1);
-					      }
-
-					      System.out.println("IntermediateHost: packet sent to Server");
-					      
-				      
-			      
-			 
-			      */
+					   
 			      
 			}
 		
@@ -346,7 +262,13 @@ s					      System.out.println("From host: " + receiveclientPacket.getAddress())
 				e1.printStackTrace();
 			}
 				}else{
-					sendPacket=delayed;
+					try {
+						sendPacket= new DatagramPacket(delayed.getData(), delayed.getLength(),
+								  InetAddress.getLocalHost(),receivePacket.getPort());
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 	      System.out.println( "IntermediateHost: Sending packet:");
 	      System.out.println("To Server: " + receivePacket.getAddress());
