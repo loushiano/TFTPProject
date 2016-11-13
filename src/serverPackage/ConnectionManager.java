@@ -55,12 +55,7 @@ public class ConnectionManager extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		try {
-			sendReceiveSocket.setSoTimeout(10000);
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 		this.data = data;
 
 		previousACK = new byte[4];

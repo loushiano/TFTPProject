@@ -113,7 +113,7 @@ public class SimulationManager extends Thread {
 			      			System.out.println("Data packet received from the server is being lost, will wait for another data again");
 			      		continue start;
 			      		}else if(testCode==1 && receivePacket.getLength()==4 && AckData==0 ){
-			      			
+			      			System.out.println("ACK packet received from the server is being lost, will wait for another data again");
 			      			flagsendClient=false;flagReceiveClient=true;
 			      		}else if(testCode==2 && receivePacket.getLength()>4 && AckData==1){
 			      			System.out.println("the data packet received will be delayed");
@@ -122,12 +122,13 @@ public class SimulationManager extends Thread {
 			      			continue start;
 			      			
 			      		}else if(testCode==2 && receivePacket.getLength()==4 && AckData==0){
+			      			System.out.println("ACK packet received from the server is being DELAYED, will wait for another data again");
 			      			flagsendClient=false;flagReceiveClient=true;
 			      			timer=(int) System.currentTimeMillis();
 			      			delayedAck1=receivePacket;
 			      		}else if(testCode==3 && ((receivePacket.getLength()==4 && AckData==0) ||(receivePacket.getLength()>4 && AckData==1 ))){
 			      			
-			      			System.out.println("duplicating the ack");
+			      			System.out.println("duplicating the Packet");
 			      			duplicated1=receivePacket;
 			      			timer=(int) System.currentTimeMillis();
 			      		}
@@ -144,6 +145,7 @@ public class SimulationManager extends Thread {
 			      	}
 			      	if(delayedAck1!=null){
 				      	if((timer+5010)<(int)System.currentTimeMillis()){
+				      		System.out.println("sending the delayed Ack");
 				      		sendToClient(true,delayedAck1);
 				      		delayedAck1=null;
 				      		
@@ -152,7 +154,7 @@ public class SimulationManager extends Thread {
 			      	if(duplicated1!=null){
 			      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
 				      	if((timer+1)<(int)System.currentTimeMillis()){
-				      		System.out.println("send the duplicated ACK again");
+				      		System.out.println("send the duplicated Packet again");
 				      		
 				      		sendToClient(true,duplicated1);
 				      		
@@ -197,9 +199,10 @@ public class SimulationManager extends Thread {
 				      			System.out.println("Ack packet received from the client is being lost, will wait for another data from the server again");
 				      			flagSendToServer=false;
 				      		}else if(testCode==2 && receiveclientPacket.getLength()>4 && AckData==1){
-				      			 delayedData=receivePacket;
+				      			System.out.println("DATA packet received from the client is being delayed, will wait for another data from the server again");
+				      			 delayedData=receiveclientPacket;
 				      			 timer=(int) System.currentTimeMillis();
-				      			flagSendToServer=false;
+				      			 receiveFromClient(true);
 				      			
 				      		}else if(testCode==2 && receiveclientPacket.getLength()==4 && AckData==0){
 				      			System.out.println("Ack packet received from the client is being delayed, will wait for another data from the server again");
@@ -207,14 +210,14 @@ public class SimulationManager extends Thread {
 				      			timer=(int) System.currentTimeMillis();
 				      			delayedAck=receiveclientPacket;
 				      		}else if(testCode==3 && ((receiveclientPacket.getLength()==4 && AckData==0) ||(receiveclientPacket.getLength()>4 && AckData==1 ))){
-				      			System.out.println("duplicating the ack");
+				      			System.out.println("duplicating the packet");
 				      			duplicated=receiveclientPacket;
 				      			timer=(int) System.currentTimeMillis();
 				      			
 				      		}
 				      	}
 				      	if(delayedData!=null){
-				      	if((timer+5010)==(int)System.currentTimeMillis()){
+				      	if((timer+5010)<(int)System.currentTimeMillis()){
 				      		sendBackToServer(true,delayedData);
 				      		delayedData=null;
 				      	}

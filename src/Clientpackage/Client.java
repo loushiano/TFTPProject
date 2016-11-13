@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import utilities.Constants;
@@ -47,11 +48,18 @@ public class Client {
 	public boolean verboseMode;
 
 	private boolean flag3;
+	DatagramPacket receivePacketACK;
 
 	byte[] errorType;
 	byte[] previousACK, previousDATA;
 
 	private byte[] opblock1;
+	private byte[] ACK1;
+	private byte[] sendingData;
+	private int len, blockNum;
+	private byte[] data1,opblock;
+
+	private ArrayList<Integer> previousACKs;
 
 	public Client()
 
@@ -59,6 +67,7 @@ public class Client {
 		errorType = new byte[2];
 		previousACK = new byte[4];
 		previousDATA = new byte[516];
+		previousACKs =new ArrayList<Integer>();
 
 		try {
 
@@ -263,7 +272,7 @@ public class Client {
 
 		byte[] ACK = { 0, 4, 0, 1 };
 
-		byte[] sendingData = new byte[516];
+		 sendingData = new byte[516];
 
 		sendingData[0] = 0;
 
@@ -273,13 +282,13 @@ public class Client {
 
 		sendingData[3] = 1;
 
-		byte[] data1 = new byte[512];
+		 data1 = new byte[512];
 
-		byte[] ACK1 = new byte[100];
+		 ACK1 = new byte[100];
 
-		byte[] opblock = new byte[4];
+		 opblock = new byte[4];
 		opblock1=new byte[4];
-		int len, blockNum;
+		
 
 		// in case of read request we send the acknowledgement and receive the
 		// data
@@ -495,7 +504,7 @@ public class Client {
 			}
 
 			// creating a packet to receive acknowledgment from the server
-			DatagramPacket receivePacketACK = new DatagramPacket(ACK1, ACK1.length);
+			receivePacketACK = new DatagramPacket(ACK1, ACK1.length);
 			try {
 				sendReceiveSocket.receive(receivePacketACK);
 			} catch (Exception e) {
@@ -546,108 +555,37 @@ public class Client {
 					 * the output file.
 					 */
 					System.arraycopy(data1, 0, sendingData, 4, data1.length);
-					sendPacket = new DatagramPacket(sendingData, sendingData.length, receivePacketACK.getAddress(),
-							receivePacketACK.getPort());
-					// this will check for us if the last data transfer is full,
-					// we send a byte of zeros to the server.
-					if (!Utility.containsAzero(data1, 0, 512)) {
-						// if we enter this condition it means that data1
-						// doesn't contain a zero
-						flag3 = false;
-					} else {
-						flag3 = true;
-						int k = Utility.getFirstZero(data1);
-						byte copyArray[] = sendingData;
-						sendingData = new byte[k + 4];
-						System.arraycopy(copyArray, 0, sendingData, 0, 4);
-						System.arraycopy(data1, 0, sendingData, 4, k);
-					}
-					sendPacket = new DatagramPacket(sendingData, sendingData.length, receivePacketACK.getAddress(),
-							receivePacketACK.getPort());
-					// sending data to the server
-					try {
-						sendReceiveSocket.send(sendPacket);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					System.arraycopy(sendingData, 0, opblock, 0, 4);// adding
-																	// the block
-																	// number to
-																	// the data
-					blockNum = Utility.increment(opblock); // incrementing the
-															// block number
-					System.arraycopy(opblock, 0, sendingData, 0, 4);
-					System.arraycopy(data1, 0, sendingData, 4, sendingData.length - 4);
-					System.out.println("Client sent Data ");
-
-					if (verboseMode) {
-						System.out.println("To host: " + sendPacket.getAddress());
-						System.out.println("Destination host port: " + sendPacket.getPort());
-						len = sendPacket.getLength();
-						System.out.println("Length: " + len);
-						System.out.print("Containing: ");
-						System.out.println(new String(sendPacket.getData(), 0, len));
-					}
-
-					System.out.print("Containing Bytes: ");
-					System.out.print("opcode: ");
-					System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(), 0, 2)));
-					System.out.println("block#:" + (blockNum - 1));
-					System.out.println("data: "
-							+ Arrays.toString(Utility.getBytes(sendPacket.getData(), 4, sendPacket.getLength())));
+					sendData(0);
 
 					data1 = new byte[512];
 					// get acknowledgement
-
-					// 00000000000000000000000000000000000000000000000000000000980909099000000000000090990
-					try {
-						sendReceiveSocket.receive(receivePacketACK);
-						if (previousACK == receivePacketACK.getData()) {
-							sendReceiveSocket.receive(receivePacketACK);
-						}
-					} catch (Exception e) {
-						if (e instanceof SocketTimeoutException) {
-							try {
-								sendReceiveSocket.send(sendPacket);
-							} catch (IOException e2) {
-								e.printStackTrace();
-								System.exit(1);
-							}
-						}
-					}
-
-					if (checkError(receivePacketACK.getData())) {
-						System.out.println();
-						printError(receivePacketACK.getData()); // yes there is
-																// an error.
+					int check=receiveData();
+					if (check==-1){
 						return;
 					}
-
-					// if there is no error in ACK, we initialize the
-					// previousACk to the new ACK
-					previousACK = receivePacketACK.getData();
-
-					// printing the info for the received ack
-					System.out.println("Acknowledgement received");
-
-					if (verboseMode) {
-						System.out.println("From host: " + receivePacketACK.getAddress());
-						System.out.println("Host port: " + receivePacketACK.getPort());
-						len = receivePacketACK.getLength();
-						System.out.println("Length: " + len);
-						System.out.print("Containing: ");
-
-						// Form a String from the byte array.
-						String received = new String(receivePacketACK.getData(), 0, len);
-						System.out.println(received + "\n");
-					}
-
-					System.out.print("Containing Bytes: ");
-					System.arraycopy(receivePacketACK.getData(), 0, opblock, 0, 4);
-					System.out.print("opcode: ");
-					System.out.println(Arrays.toString(Utility.getBytes(receivePacketACK.getData(), 0, 2)));
-					System.out.println("block#: " + Utility.getByteInt(opblock));
-				}
+					 
+						while(check==1){
+							sendData(check);
+							check=receiveData();
+						}
+						if(previousACKs.contains(Utility.getByteInt(receivePacketACK.getData()))){
+							System.out.println("an Ack that we have already received has been received again, we must ignore it");
+							receiveData();
+							
+							
+						}else {
+							
+						
+						if(previousACKs.size()<=20){
+							System.out.println("hi");
+							previousACKs.add(Utility.getByteInt(receivePacketACK.getData()));
+						}else{
+							previousACKs.remove(0);
+							previousACKs.add(Utility.getByteInt(receivePacketACK.getData()));
+						}
+						}
+					// 00000000000000000000000000000000000000000000000000000000980909099000000000000090990
+				}	
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -769,5 +707,103 @@ public class Client {
 		System.out.println("you can enter a new command");
 
 	}
+	private void sendData(int check){
+		
+		
+		// this will check for us if the last data transfer is full,
+		// we send a byte of zeros to the server.
+		if (!Utility.containsAzero(data1, 0, 512)) {
+			// if we enter this condition it means that data1
+			// doesn't contain a zero
+			flag3 = false;
+		} else {
+			flag3 = true;
+			int k = Utility.getFirstZero(data1);
+			byte copyArray[] = sendingData;
+			sendingData = new byte[k + 4];
+			System.arraycopy(copyArray, 0, sendingData, 0, 4);
+			System.arraycopy(data1, 0, sendingData, 4, k);
+		}
+		sendPacket = new DatagramPacket(sendingData, sendingData.length, receivePacketACK.getAddress(),
+				receivePacketACK.getPort());
+		// sending data to the server
+		try {
+			sendReceiveSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.arraycopy(sendingData, 0, opblock, 0, 4);// adding
+														// the block
+														// number to
+		if(check==1){												// the data
+		blockNum = Utility.increment(opblock); // incrementing the
+		}else {
+			blockNum = Utility.getByteInt(opblock); 
+		}							// block number
+		System.arraycopy(opblock, 0, sendingData, 0, 4);
+		System.arraycopy(data1, 0, sendingData, 4, sendingData.length - 4);
+		System.out.println("Client sent Data ");
+
+		if (verboseMode) {
+			System.out.println("To host: " + sendPacket.getAddress());
+			System.out.println("Destination host port: " + sendPacket.getPort());
+			len = sendPacket.getLength();
+			System.out.println("Length: " + len);
+			System.out.print("Containing: ");
+			System.out.println(new String(sendPacket.getData(), 0, len));
+		}
+
+		System.out.print("Containing Bytes: ");
+		System.out.print("opcode: ");
+		System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(), 0, 2)));
+		System.out.println("block#:" + (blockNum - 1));
+		System.out.println("data: "
+				+ Arrays.toString(Utility.getBytes(sendPacket.getData(), 4, sendPacket.getLength())));
+		
+	}
+	public int receiveData(){
+		try {
+			sendReceiveSocket.receive(receivePacketACK);
+			
+		} catch (Exception e) {
+			if (e instanceof SocketTimeoutException) {
+				return 1;
+			}
+		}
+
+		if (checkError(receivePacketACK.getData())) {
+			System.out.println();
+			printError(receivePacketACK.getData()); // yes there is
+													// an error.
+			return -1;
+		}
+
+		// if there is no error in ACK, we initialize the
+		// previousACk to the new ACK
+		previousACK = receivePacketACK.getData();
+
+		// printing the info for the received ack
+		System.out.println("Acknowledgement received");
+
+		if (verboseMode) {
+			System.out.println("From host: " + receivePacketACK.getAddress());
+			System.out.println("Host port: " + receivePacketACK.getPort());
+			len = receivePacketACK.getLength();
+			System.out.println("Length: " + len);
+			System.out.print("Containing: ");
+
+			// Form a String from the byte array.
+			String received = new String(receivePacketACK.getData(), 0, len);
+			System.out.println(received + "\n");
+		}
+
+		System.out.print("Containing Bytes: ");
+		System.arraycopy(receivePacketACK.getData(), 0, opblock, 0, 4);
+		System.out.print("opcode: ");
+		System.out.println(Arrays.toString(Utility.getBytes(receivePacketACK.getData(), 0, 2)));
+		System.out.println("block#: " + Utility.getByteInt(opblock));
+		return 0;
+	}
+	
 
 }
