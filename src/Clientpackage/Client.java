@@ -51,6 +51,8 @@ public class Client {
 	byte[] errorType;
 	byte[] previousACK, previousDATA;
 
+	private byte[] opblock1;
+
 	public Client()
 
 	{
@@ -276,7 +278,7 @@ public class Client {
 		byte[] ACK1 = new byte[100];
 
 		byte[] opblock = new byte[4];
-
+		opblock1=new byte[4];
 		int len, blockNum;
 
 		// in case of read request we send the acknowledgement and receive the
@@ -305,7 +307,7 @@ public class Client {
 
 			// ************************************************************************************************************************************************************************************************************************
 			while (flag) {
-				System.arraycopy(previousDATA,0,receivePacket.getData(),0,receivePacket.getData().length);
+				System.arraycopy(receivePacket.getData(),0,previousDATA,0,receivePacket.getData().length);
 				try {
 
 					// Block until a datagram is received via sendReceiveSocket.
@@ -383,6 +385,7 @@ public class Client {
 				}
 
 				System.arraycopy(receivePacket.getData(), 0, opblock, 0, 4);
+				System.arraycopy(previousDATA, 0, opblock1, 0, 4);
 
 				System.out.print("Containing Bytes: ");
 
@@ -398,7 +401,8 @@ public class Client {
 				ACK[3] = receivePacket.getData()[3];
 
 				// Here we will start writing to the file.
-				if(!Arrays.equals(receivePacket.getData(),previousDATA)){
+				if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1)){
+					System.out.println(" "+Utility.getByteInt(opblock)+ " "+Utility.getByteInt(opblock1));
 					System.out.println("how are you");
 				try {
 
@@ -411,7 +415,7 @@ public class Client {
 					return;
 
 				}
-				}
+				
 				// creating a send packet for acknowledgement
 
 				DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length, receivePacket.getAddress(),
@@ -452,8 +456,11 @@ public class Client {
 					System.out.println("block #: " + Utility.getByteInt(opblock));
 
 				}
-
-			}
+				}else{
+					System.out.println("a data packet that already got received was received again, the client will ignore it");
+				}
+				}
+			
 
 			try {
 

@@ -204,7 +204,7 @@ public class ConnectionManager extends Thread {
 					}
 					if(previousACKs.contains(Utility.getByteInt(receivePacketACK.getData()))){
 						System.out.println("an Ack that we have already received has been received again, we must ignore it");
-						
+						receiveData();
 						
 						
 					}else {
