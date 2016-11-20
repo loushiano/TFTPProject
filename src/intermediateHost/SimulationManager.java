@@ -139,7 +139,8 @@ public class SimulationManager extends Thread {
 			      		
 			      		System.out.println("sending the delayed data");
 			      		sendToClient(true,delayedData1);
-			      		
+			      		receiveFromClient(true);
+			      		sendBackToServer(true,null);
 			      		delayedData1=null;
 			      	}
 			      	}
@@ -157,28 +158,16 @@ public class SimulationManager extends Thread {
 				      		System.out.println("send the duplicated Packet again");
 				      		
 				      		sendToClient(true,duplicated1);
-				      		
+				      		receiveFromClient(true);
+				      		sendBackToServer(true,null);
 				      		duplicated1=null;
 				      		
 				      	}
 			      	}
 			
 			    
-			      // Process the received datagram.
-			      System.out.println("IntermediateHost: Packet received:");
-			      System.out.println("From host: " + receivePacket.getAddress());
-			      System.out.println("Host port: " + receivePacket.getPort());
-			      len = receivePacket.getLength();
-			      System.out.println("Length: " + len);
-			      System.out.print("Containing: " );
-			      if((len!=4 && len!=516)||Utility.containsAzero(data, 4,len)){
-			    	  flag=false;
-			    	  
-			    	  
-			      }
-			      // Form a String from the byte array.
-			      received = new String(data,0,len);   
-			      System.out.println(received + "\n");
+			      
+			    
 			     
 			      
 			    
@@ -235,8 +224,8 @@ public class SimulationManager extends Thread {
 					      	}
 				      	if(duplicated!=null){
 				      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
-					      	if((timer+1)<(int)System.currentTimeMillis()){
-					      		System.out.println("send the duplicated ACK again");
+					      	if((timer+4)<(int)System.currentTimeMillis()){
+					      		System.out.println("send the duplicated Packet again");
 					      		
 					      		sendBackToServer(true,duplicated);
 					      		
@@ -261,18 +250,7 @@ public class SimulationManager extends Thread {
 		
 		
 	}
-	public void duplicate(){
-		
-	}
-	public void delay(){
-		
-	}
-	public void lose(){
-		
-	}
-	public void printing(){
-		
-	}
+	
 	public void sendBackToServer(boolean flag,DatagramPacket delayed){
 			if(flag){
 				if(delayed==null){
@@ -317,7 +295,7 @@ public class SimulationManager extends Thread {
 		if(flag){
 			if(delayed==null){
 		try {
-			sendPacket = new DatagramPacket(data, receivePacket.getLength(),
+			sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
 					  InetAddress.getLocalHost(), clientPort);
 		} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
@@ -394,6 +372,7 @@ public class SimulationManager extends Thread {
 	}
 	}
 	public void receiveFromServer(){
+		data=new byte[516];
 		receivePacket = new DatagramPacket(data, data.length);
 	      System.out.println("IntermediateHost: Waiting for Packet.\n");
 	      	
@@ -408,5 +387,20 @@ public class SimulationManager extends Thread {
 	         e.printStackTrace();
 	         System.exit(1);
 	      }
+	   // Process the received datagram.
+	      System.out.println("IntermediateHost: Packet received:");
+	      System.out.println("From host: " + receivePacket.getAddress());
+	      System.out.println("Host port: " + receivePacket.getPort());
+	     int len = receivePacket.getLength();
+	      System.out.println("Length: " + len);
+	      System.out.print("Containing: " );
+	      if((len!=4 && len!=516)||Utility.containsAzero(data, 4,len)){
+	    	  flag=false;
+	    	  
+	    	  
+	      }
+	      // Form a String from the byte array.
+	     String received = new String(data,0,len);   
+	      System.out.println(received + "\n");
 	}
 }

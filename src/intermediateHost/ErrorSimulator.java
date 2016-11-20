@@ -44,7 +44,7 @@ public class ErrorSimulator {
 	public void receiveSendPacket(int testCode,int packetNum,int AckData){
 		
 			// Construct a DatagramPacket for receiving packets up 
-		      // to 100 bytes long (the length of the byte array).
+	      // to 100 bytes long (the length of the byte array).
 
 		      byte data[] = new byte[1400];
 		      receivePacket = new DatagramPacket(data, data.length);

@@ -412,7 +412,7 @@ public class Client {
 				// Here we will start writing to the file.
 				if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1)){
 					System.out.println(" "+Utility.getByteInt(opblock)+ " "+Utility.getByteInt(opblock1));
-					System.out.println("how are you");
+					
 				try {
 
 					out.write(receivePacket.getData(), 4, receivePacket.getLength() - 4);
@@ -424,7 +424,9 @@ public class Client {
 					return;
 
 				}
-				
+				}else{
+					System.out.println("a data packet that already got received was received again, the client will ignore it");
+				}
 				// creating a send packet for acknowledgement
 
 				DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length, receivePacket.getAddress(),
@@ -465,9 +467,7 @@ public class Client {
 					System.out.println("block #: " + Utility.getByteInt(opblock));
 
 				}
-				}else{
-					System.out.println("a data packet that already got received was received again, the client will ignore it");
-				}
+				
 				}
 			
 
@@ -555,19 +555,20 @@ public class Client {
 					 * the output file.
 					 */
 					System.arraycopy(data1, 0, sendingData, 4, data1.length);
-					sendData(0);
+					sendData(1);
 
-					data1 = new byte[512];
+					
 					// get acknowledgement
 					int check=receiveData();
 					if (check==-1){
 						return;
 					}
 					 
-						while(check==1){
+						while(check==0){
 							sendData(check);
 							check=receiveData();
 						}
+						data1 = new byte[512];
 						if(previousACKs.contains(Utility.getByteInt(receivePacketACK.getData()))){
 							System.out.println("an Ack that we have already received has been received again, we must ignore it");
 							receiveData();
@@ -767,7 +768,7 @@ public class Client {
 			
 		} catch (Exception e) {
 			if (e instanceof SocketTimeoutException) {
-				return 1;
+				return 0;
 			}
 		}
 
@@ -802,7 +803,7 @@ public class Client {
 		System.out.print("opcode: ");
 		System.out.println(Arrays.toString(Utility.getBytes(receivePacketACK.getData(), 0, 2)));
 		System.out.println("block#: " + Utility.getByteInt(opblock));
-		return 0;
+		return 1;
 	}
 	
 

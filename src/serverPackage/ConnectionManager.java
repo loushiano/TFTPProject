@@ -206,7 +206,7 @@ public class ConnectionManager extends Thread {
 						
 					
 					if(previousACKs.size()<=20){
-						System.out.println("hi");
+						
 						previousACKs.add(Utility.getByteInt(receivePacketACK.getData()));
 					}else{
 						previousACKs.remove(0);
