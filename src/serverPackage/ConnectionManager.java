@@ -44,6 +44,7 @@ public class ConnectionManager extends Thread {
 	private DatagramPacket sendPacketDATA;
 	private byte[] ACK,responseData,data1; 
 	private ArrayList<Integer> previousACKs;
+	private byte[] opblock1;
 	public ConnectionManager(DatagramPacket receivedPacket, byte[] data, String filepath, String mode) {
 		this.receivePacket = receivedPacket;
 		previousACKs=new  ArrayList<Integer>();
@@ -60,6 +61,7 @@ public class ConnectionManager extends Thread {
 
 		previousACK = new byte[4];
 		previousDATA = new byte[516];
+		opblock1=new byte[4];
 	}
 
 	public void run() {
@@ -310,22 +312,19 @@ public class ConnectionManager extends Thread {
 			// this while will keep looping until we get data less than 512 byte
 			// from the client
 			while (flag) {
+				System.arraycopy(receivePacketDATA.getData(),0,previousDATA,0,receivePacketDATA.getData().length);
 
 				System.out.println("now waiting for new data");
 				// get data
 				try {
 					sendReceiveSocket.receive(receivePacketDATA);
-					if (previousDATA == receivePacketDATA.getData()) {
-						sendReceiveSocket.receive(receivePacketDATA);
-					}
+					
 				} catch (IOException e) {
 					e.printStackTrace();
 					System.exit(1);
 				}
-				// Initialize previous data to te new data.
-				// After checking if there is an error in the packet --> do it
-				// ali hhh <3 :D (not necessary though)
-				previousDATA = receivePacket.getData();
+				
+				
 
 				if (Utility.containsAzero(receivePacketDATA.getData(), 4, 516)) {
 					flag = false;
@@ -350,7 +349,10 @@ public class ConnectionManager extends Thread {
 				System.arraycopy(receivePacketDATA.getData(), 0, opblock, 0, 4);
 				System.out.println("block#: " + Utility.getByteInt(opblock));
 				System.out.println("data: " + Arrays.toString(Utility.getBytes(receivePacketDATA.getData(), 4, len)));
-
+				System.arraycopy(receivePacketDATA.getData(), 0, opblock, 0, 4);
+				System.arraycopy(previousDATA, 0, opblock1, 0, 4);
+				if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1)){
+					//System.out.println(Utility.getByteInt(opblock)+" "+Utility.getByteInt(opblock1));
 				try {
 					out.write(receivePacketDATA.getData(), 4, receivePacketDATA.getLength() - 4);
 				} catch (IOException e1) {
@@ -359,7 +361,9 @@ public class ConnectionManager extends Thread {
 
 					return;
 				}
-
+				}else{
+					System.out.println("A data packet that we received beofre,has been sent to us again:IGNORED!!");
+				}
 				// get block number from the received block
 				ACK[2] = receivePacketDATA.getData()[2];
 				ACK[3] = receivePacketDATA.getData()[3];

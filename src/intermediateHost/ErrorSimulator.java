@@ -23,7 +23,7 @@ import serverPackage.Server;
 import utilities.Utility;
 
 public class ErrorSimulator {
-
+	
 	DatagramPacket sendPacket, receivePacket;
 	DatagramSocket sendSocket, receiveSocket, sendToClientSocket,sendReceiveSocket,receiveClientSocket;
 	int clientPort; //client port where the request comes from

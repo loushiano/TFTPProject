@@ -158,7 +158,7 @@ class ServerUI extends Thread
 	/**
 	 * The text area where this thread's output will be displayed.
 	 */
-
+	
 
 	public ServerUI() {
 

@@ -50,7 +50,7 @@ public class ClientUI {
 	        String requestType = "", filePath,filePath2, vqMode,filewritepath = null;
 
 	
-
+	        
 	        String tnMode = Constants.NORMAL;
 
 

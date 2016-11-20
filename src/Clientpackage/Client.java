@@ -280,7 +280,7 @@ public class Client {
 
 		sendingData[2] = 0;
 
-		sendingData[3] = 1;
+		sendingData[3] = 0;
 
 		 data1 = new byte[512];
 
@@ -336,25 +336,7 @@ public class Client {
 				}
 
 				// Initialize previous data to te new data.
-				
-
-				/*
-				 * 
-				 * if()
-				 * 
-				 * File f = new File(readFilePath);
-				 * 
-				 * if(f.exists()){
-				 * 
-				 * throw new Exception("file already exists");
-				 * 
-				 * }catch(Exception e){
-				 * 
-				 * byte error = new byte[100];
-				 * 
-				 * }
-				 * 
-				 */
+			
 
 				// if what we are receiving is less than 516, this means that we
 				// do not have to accept anything anymore
@@ -578,7 +560,6 @@ public class Client {
 							
 						
 						if(previousACKs.size()<=20){
-							System.out.println("hi");
 							previousACKs.add(Utility.getByteInt(receivePacketACK.getData()));
 						}else{
 							previousACKs.remove(0);
@@ -728,21 +709,9 @@ public class Client {
 		sendPacket = new DatagramPacket(sendingData, sendingData.length, receivePacketACK.getAddress(),
 				receivePacketACK.getPort());
 		// sending data to the server
-		try {
-			sendReceiveSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		System.arraycopy(sendingData, 0, opblock, 0, 4);// adding
-														// the block
-														// number to
-		if(check==1){												// the data
-		blockNum = Utility.increment(opblock); // incrementing the
-		}else {
-			blockNum = Utility.getByteInt(opblock); 
-		}							// block number
-		System.arraycopy(opblock, 0, sendingData, 0, 4);
-		System.arraycopy(data1, 0, sendingData, 4, sendingData.length - 4);
+		
+		
+		//System.arraycopy(data1, 0, sendingData, 4, sendingData.length - 4);
 		System.out.println("Client sent Data ");
 
 		if (verboseMode) {
@@ -753,21 +722,40 @@ public class Client {
 			System.out.print("Containing: ");
 			System.out.println(new String(sendPacket.getData(), 0, len));
 		}
-
+		System.arraycopy(sendingData, 0, opblock, 0, 4);
+		
+		if(check==1){												// the data
+			blockNum = Utility.increment(opblock); // incrementing the
+			}else{
+				blockNum = Utility.getByteInt(opblock);
+			}												// block number
+		System.arraycopy(opblock, 0,sendingData, 0, 4);
+		
 		System.out.print("Containing Bytes: ");
 		System.out.print("opcode: ");
 		System.out.println(Arrays.toString(Utility.getBytes(sendPacket.getData(), 0, 2)));
-		System.out.println("block#:" + (blockNum - 1));
+		
+		System.out.println("block#:" + (blockNum));
 		System.out.println("data: "
 				+ Arrays.toString(Utility.getBytes(sendPacket.getData(), 4, sendPacket.getLength())));
-		
-	}
+		System.arraycopy(sendingData, 0, opblock, 0, 4);// adding
+		// the block
+		// number to
+		try {
+			sendReceiveSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+				
+		}
 	public int receiveData(){
 		try {
 			sendReceiveSocket.receive(receivePacketACK);
 			
 		} catch (Exception e) {
 			if (e instanceof SocketTimeoutException) {
+				
+				System.out.println("\n\n CLIENT TIMED OUT.RETRANSMIT DATA\n\n");
 				return 0;
 			}
 		}

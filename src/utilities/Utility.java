@@ -61,7 +61,7 @@ public class Utility {
 		 
 		 	array[3]++;
 		 	//when we reach to -128 we need to add 256 so we can keep counting up
-		 	if(array[3]>=-128 && array[3]<=0){
+		 	if(array[3]>=-128 && array[3]<0 && array[2]>0){
 		 		flag=true;
 		 		
 		 	}
@@ -99,7 +99,7 @@ public class Utility {
 	
 		flag=false;
 		flag2=false;
-		if(array[3]>=-128 && array[3]<=0){
+		if(array[3]>=-128 && array[3]<0 && array[2]>0){
 	 		flag=true;
 	 		
 	 	}

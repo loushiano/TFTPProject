@@ -156,10 +156,12 @@ public class SimulationManager extends Thread {
 			      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
 				      	if((timer+1)<(int)System.currentTimeMillis()){
 				      		System.out.println("send the duplicated Packet again");
-				      		
 				      		sendToClient(true,duplicated1);
+				      		if(duplicated1.getLength()>4){
+				      		
 				      		receiveFromClient(true);
 				      		sendBackToServer(true,null);
+				      		}
 				      		duplicated1=null;
 				      		
 				      	}
@@ -208,6 +210,8 @@ public class SimulationManager extends Thread {
 				      	if(delayedData!=null){
 				      	if((timer+5010)<(int)System.currentTimeMillis()){
 				      		sendBackToServer(true,delayedData);
+				      		receiveFromServer();
+				      		sendToClient(true,null);
 				      		delayedData=null;
 				      	}
 				      	}
@@ -228,6 +232,10 @@ public class SimulationManager extends Thread {
 					      		System.out.println("send the duplicated Packet again");
 					      		
 					      		sendBackToServer(true,duplicated);
+					      		if(duplicated.getLength()>4){
+					      			receiveFromServer();
+						      		sendToClient(true,null);
+					      		}
 					      		
 					      		duplicated=null;
 					      		
@@ -366,6 +374,9 @@ public class SimulationManager extends Thread {
 		      // Form a String from the byte array.
 		      String received = new String(receiveclientPacket.getData(),0,len);   
 		      System.out.println(received + "\n");
+		      byte opblock[]=new byte[4];
+		      System.arraycopy(receiveclientPacket.getData(), 0, opblock, 0, 4);
+		      System.out.println("opcode: "+ Utility.getByteInt(opblock));
 		
 	}else{
 		flagReceiveClient=true;
