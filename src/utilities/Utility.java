@@ -12,10 +12,7 @@ import java.net.InetAddress;
 //Utility class to provide utility methods that can be used by any class.
 public class Utility {
 	public static boolean shutDown=false;
-	private static DatagramPacket receivePacket;
-	private static boolean received=false;
-	private static byte[] data1;
-	private static int lengthy;
+	
 	/**
 	 * Trim a byte array from 0 to specified length
 	 * @param data the byte array to trim
@@ -47,7 +44,7 @@ public class Utility {
 	
 	// to increment the array  
 	public static synchronized int increment(byte array[]){
-		int j,k,l;
+		int k,l;
 		 boolean flag,flag2;
 	
 		flag=false;
@@ -94,7 +91,7 @@ public class Utility {
 			return l;
 		}
 	public static synchronized int getByteInt(byte array[]){
-		int j,k,l;
+		int k,l;
 		 boolean flag,flag2;
 	
 		flag=false;
@@ -142,65 +139,12 @@ public class Utility {
 		}
 		return 0;
 	}
-	public static synchronized void setShut(boolean a){
-		shutDown=a;
-	}
-	public static synchronized boolean getShu(){
-		return shutDown;
-	}
-
-	public static synchronized void setPacket(DatagramPacket receivePacket) {
-		Utility.receivePacket=receivePacket;
-		
-	}
-
-	public static synchronized void setReceived(boolean b) {
-		Utility.received=b;
-		
-	}
-
-	public static synchronized boolean getReceived() {
-		
-		return Utility.received;
-	}
-
-	public static synchronized DatagramPacket getPacket() {
-		DatagramPacket packet=new DatagramPacket(receivePacket.getData(),receivePacket.getLength());
-		
-		return packet;
-	}
-
-	public static synchronized void setData(byte[] data) {
-	data1=data;
-		
-	}
-
-	public static  byte[] getData() {
-		// TODO Auto-generated method stub
-		byte copy[]=new byte[data1.length];
-		System.arraycopy(data1,0, copy,0, data1.length);
-		return copy;
-	}
+	
 
 	
 
-	public synchronized static int getLength() {
-		// TODO Auto-generated method stub
-		return lengthy;
-	}
+	
 
-	public synchronized static void setLenght(int length) {
-		lengthy=length;
-		
-	}
-
-	public synchronized static int getPort() {
-		// TODO Auto-generated method stub
-		return receivePacket.getPort();
-	}
-	public synchronized static InetAddress getAddress(){
-		return receivePacket.getAddress();
-		
-	}
+	
 
 }

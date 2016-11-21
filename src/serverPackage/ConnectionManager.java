@@ -22,7 +22,7 @@ import utilities.Utility;
  */
 public class ConnectionManager extends Thread {
 	private String filepath;
-	private DatagramPacket receivePacket, sendPacket;
+	private DatagramPacket receivePacket;
 	private DatagramSocket sendReceiveSocket, receiveSocket;
 	private byte[] data;
 	public static final byte READ = 1, WRITE = 2;
@@ -35,7 +35,6 @@ public class ConnectionManager extends Thread {
 	public String received;
 	private boolean flag3 = false;
 	private final String FILEPATH = "";
-	private boolean errorFlag;
 	private DatagramPacket errorPacket;
 	private static final int TIMEOUT = 5000;
 	byte[] previousACK, previousDATA;
@@ -45,6 +44,10 @@ public class ConnectionManager extends Thread {
 	private byte[] ACK,responseData,data1; 
 	private ArrayList<Integer> previousACKs;
 	private byte[] opblock1;
+	private DatagramPacket receivePacketDATA;
+	private DatagramPacket sendPacketACK;
+	private byte[] ACK1={ 0, 4, 0, 0 };
+	private byte[] DATA;
 	public ConnectionManager(DatagramPacket receivedPacket, byte[] data, String filepath, String mode) {
 		this.receivePacket = receivedPacket;
 		previousACKs=new  ArrayList<Integer>();
@@ -223,12 +226,21 @@ public class ConnectionManager extends Thread {
 					 * the output file.
 					 */
 					System.arraycopy(data1, 0, responseData, 4, data1.length);
-
+					boolean check1=true;
 					//send Data
 					sendData(true);
 					// get acknowledge
-
-					receiveData();
+					int k=0;
+					check1=receiveData();
+					if(!check1){
+						k++;
+						sendData(check1);
+						check1=receiveData();
+						if(k==3){
+							System.out.print("exiting");
+							return;
+						}
+					}
 
 				}
 
@@ -277,40 +289,14 @@ public class ConnectionManager extends Thread {
 				e1.printStackTrace();
 			}
 			// creating a an array data to recive the data from the client
-			byte[] DATA = new byte[516];
+			 DATA = new byte[516];
 			// creating an array to send ack
-			byte[] ACK = { 0, 4, 0, 0 };
+			 
 
-			// creating a packet for the ack
-			DatagramPacket sendPacketACK = new DatagramPacket(ACK, ACK.length, receivePacket.getAddress(),
-					receivePacket.getPort());
-			// creating packet to receive data
-			DatagramPacket receivePacketDATA = new DatagramPacket(DATA, DATA.length);
-
-			// sending the ack packet
-			try {
-				sendReceiveSocket.send(sendPacketACK);
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-
-			// printing the info for the ack
-			System.out.println("Server: Sent Acknowledgement:");
-			if (mode.equals(Constants.VERBOSE)) {
-				System.out.println("To host: " + receivePacket.getAddress());
-				System.out.println("Destination host port: " + receivePacket.getPort());
-				len = sendPacketACK.getLength();
-				System.out.println("Length: " + len);
-				System.out.print("Containing: ");
-				System.out.println(new String(sendPacketACK.getData(), 0, len));
-				System.out.print("Containing Bytes: ");
-				System.out.println("opcode: " + Arrays.toString(Utility.getBytes(sendPacketACK.getData(), 0, 2)));
-				System.out.println("block#: 0");
-			}
-
+				sendACK();
 			// this while will keep looping until we get data less than 512 byte
 			// from the client
+			start:
 			while (flag) {
 				System.arraycopy(receivePacketDATA.getData(),0,previousDATA,0,receivePacketDATA.getData().length);
 
@@ -323,7 +309,11 @@ public class ConnectionManager extends Thread {
 					e.printStackTrace();
 					System.exit(1);
 				}
-				
+				if(receivePacketDATA.getData()[1]==2){
+					System.out.println("server has received a request again");
+					sendACK();
+					continue start;
+				}
 				
 
 				if (Utility.containsAzero(receivePacketDATA.getData(), 4, 516)) {
@@ -351,7 +341,7 @@ public class ConnectionManager extends Thread {
 				System.out.println("data: " + Arrays.toString(Utility.getBytes(receivePacketDATA.getData(), 4, len)));
 				System.arraycopy(receivePacketDATA.getData(), 0, opblock, 0, 4);
 				System.arraycopy(previousDATA, 0, opblock1, 0, 4);
-				if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1)){
+				if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1) && !Utility.containsAzero(receivePacketDATA.getData(), 4, 516)){
 					//System.out.println(Utility.getByteInt(opblock)+" "+Utility.getByteInt(opblock1));
 				try {
 					out.write(receivePacketDATA.getData(), 4, receivePacketDATA.getLength() - 4);
@@ -365,9 +355,9 @@ public class ConnectionManager extends Thread {
 					System.out.println("A data packet that we received beofre,has been sent to us again:IGNORED!!");
 				}
 				// get block number from the received block
-				ACK[2] = receivePacketDATA.getData()[2];
-				ACK[3] = receivePacketDATA.getData()[3];
-				sendPacketACK = new DatagramPacket(ACK, ACK.length, receivePacket.getAddress(),
+				ACK1[2] = receivePacketDATA.getData()[2];
+				ACK1[3] = receivePacketDATA.getData()[3];
+				sendPacketACK = new DatagramPacket(ACK1, ACK1.length, receivePacket.getAddress(),
 						receivePacket.getPort());
 
 				try {
@@ -387,7 +377,7 @@ public class ConnectionManager extends Thread {
 					System.out.println(new String(sendPacketACK.getData(), 0, len));
 					System.out.print("Containing Bytes: ");
 					System.out.println("opcode: " + Arrays.toString(Utility.getBytes(sendPacketACK.getData(), 0, 2)));
-					System.out.println("block#: " + Utility.getByteInt(ACK));
+					System.out.println("block#: " + Utility.getByteInt(ACK1));
 				}
 				System.out.println("ACKNOWLEDGEMENT SENT");
 
@@ -404,6 +394,38 @@ public class ConnectionManager extends Thread {
 
 		}
 		System.out.println("done with transeferring");
+	}
+
+	private void sendACK() {
+		// creating a packet for the ack
+					sendPacketACK = new DatagramPacket(ACK1, ACK1.length, receivePacket.getAddress(),
+							receivePacket.getPort());
+					// creating packet to receive data
+					 receivePacketDATA = new DatagramPacket(DATA, DATA.length);
+					
+					// sending the ack packet
+					try {
+						sendReceiveSocket.send(sendPacketACK);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.exit(1);
+					}
+
+					// printing the info for the ack
+					System.out.println("Server: Sent Acknowledgement:");
+					if (mode.equals(Constants.VERBOSE)) {
+						System.out.println("To host: " + receivePacket.getAddress());
+						System.out.println("Destination host port: " + receivePacket.getPort());
+						len = sendPacketACK.getLength();
+						System.out.println("Length: " + len);
+						System.out.print("Containing: ");
+						System.out.println(new String(sendPacketACK.getData(), 0, len));
+						System.out.print("Containing Bytes: ");
+						System.out.println("opcode: " + Arrays.toString(Utility.getBytes(sendPacketACK.getData(), 0, 2)));
+						System.out.println("block#: 0");
+					}
+
+		
 	}
 
 	// this method takes a byte array, an error code and a string and it

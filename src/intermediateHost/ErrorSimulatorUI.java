@@ -5,8 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import serverPackage.Server;
-import utilities.Constants;
+import Clientpackage.Client;
 
 public class ErrorSimulatorUI {
 	private ArrayList<String> testcodes;
@@ -27,11 +26,16 @@ public class ErrorSimulatorUI {
 						+ "1-lose packet\n2-delay packet\n3-duplicate packet");
 				System.out.println();
 				String input = br.readLine();
+				boolean flag1=true;
+					while(flag1){
+						
 					
 				if (testcodes.contains(input)){
+					flag1=false;
 					int i=Integer.parseInt(input);
 					results.add(i);
 					System.out.println();
+					if(i!=0){
 					System.out.println("Which packet would you like the test to apply on:\n0 is for RRQ or WRQ an"
 							+ "d 1 and above for acks and datas");
 					input=br.readLine();
@@ -48,6 +52,9 @@ public class ErrorSimulatorUI {
 					
 					}
 					results.add(i);
+					if(i==0){
+						ErrorSimulator.FLAG=true;
+					}
 					System.out.println("\n Now specify whether the packet you want to test is an ack or a data packet\n"
 							+ "0-Ack, 1-data");
 					input=br.readLine();
@@ -70,11 +77,13 @@ public class ErrorSimulatorUI {
 						
 						}
 					results.add(i);
-					
+					}	
 				}else{
 					System.out.println("Command not recognized. Please try again.");
+				
+					
 				}
-			
+					}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

@@ -14,7 +14,6 @@ import utilities.Constants;
 
 import java.io.FileInputStream;
 
-import java.nio.file.AccessDeniedException;
 
 import java.io.File;
 
@@ -38,6 +37,7 @@ public class ClientUI {
 
 	 private static boolean flag;
 	private static boolean flag2;
+	private static String IP;
 
 	public static void main(String[] args) {
 
@@ -149,7 +149,7 @@ public class ClientUI {
 
 	                	File fis = null;
 
-	                	boolean correctPath = true;
+	                	
 
 	                	//AccessDeniedException adFile = null;
 
@@ -240,12 +240,35 @@ public class ClientUI {
 	                	vqMode = input;
 
 	                	System.out.println();
+	                		
+	                	System.out.print("Enter mode (test or normal): ");
+
+	                	input = br.readLine();
 
 	                	
 
+	                	while (!(input.equals(Constants.TEST) || (input.equals(Constants.NORMAL)))){
+
+	                		System.out.print("Please enter correct mode (test or normal): ");
+
+		                	input = br.readLine();
+
+	                	}
+
+	                	tnMode = input;
+
+	                	System.out.println();
+	                	System.out.print("if the server is on the same machine type in 0,if not type the IP address of the server ");
+
+	                	input = br.readLine();
+
+	               
+
+	                	IP = input;
+
 	            
 
-	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode));
+	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode,IP));
 
 	                	thread.start();
 
@@ -343,12 +366,37 @@ public class ClientUI {
 	                	vqMode = input;
 
 	                	System.out.println();
+	                	System.out.print("Enter mode (test or normal): ");
+
+	                	input = br.readLine();
+
+	                	
+
+	                	while (!(input.equals(Constants.TEST) || (input.equals(Constants.NORMAL)))){
+
+	                		System.out.print("Please enter correct mode (test or normal): ");
+
+		                	input = br.readLine();
+
+	                	}
+
+	                	tnMode = input;
+
+	                	System.out.println();
+	                	System.out.print("if the server is on the same machine type in 0,if not type the IP address of the server ");
+
+	                	input = br.readLine();
+
+	         
+
+	                	IP = input;
+
 
 	                	
 
 	                	filePath2=null;
 
-	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode));
+	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode,IP));
 
 	                	thread.start();
 
