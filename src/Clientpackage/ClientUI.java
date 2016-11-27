@@ -150,7 +150,7 @@ public class ClientUI {
 	                	File fis = null;
 
 	                	
-
+	                	
 	                	//AccessDeniedException adFile = null;
 
 	                	//enter the infite loop and check if we have the right path.

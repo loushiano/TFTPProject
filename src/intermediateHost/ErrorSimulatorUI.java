@@ -15,7 +15,9 @@ public class ErrorSimulatorUI {
 		//String mode=Constants.VERBOSE;
 		testcodes=new ArrayList<String>();
 		results=new ArrayList<Integer>();
-		testcodes.add("1");testcodes.add("2");testcodes.add("3");testcodes.add("0");
+		for(int i=0;i<10;i++){
+		testcodes.add(i+"");
+		}
 		try{
 			br = new BufferedReader(new InputStreamReader(System.in));
 			
@@ -23,7 +25,8 @@ public class ErrorSimulatorUI {
 				
 				
 				System.out.println("Enter one of the following numbers to test the file transfer:\n 0-normal mode\n"
-						+ "1-lose packet\n2-delay packet\n3-duplicate packet");
+						+ "1-lose packet\n2-delay packet\n3-duplicate packet\n4-send a wrq or rrq with wrong opcode\n"
+						+ "5-send a packet with invalid opcode\n6-invalid mode field\n7- invalid block numbers\n8- packet with unknown TID\n9-invalide request form");
 				System.out.println();
 				String input = br.readLine();
 				boolean flag1=true;
@@ -35,7 +38,7 @@ public class ErrorSimulatorUI {
 					int i=Integer.parseInt(input);
 					results.add(i);
 					System.out.println();
-					if(i!=0){
+					if(i!=0 && i!=4 && i!=6 && i!=9){
 					System.out.println("Which packet would you like the test to apply on:\n0 is for RRQ or WRQ an"
 							+ "d 1 and above for acks and datas");
 					input=br.readLine();
@@ -53,8 +56,8 @@ public class ErrorSimulatorUI {
 					}
 					results.add(i);
 					if(i==0){
-						ErrorSimulator.FLAG=true;
-					}
+						
+					}else{
 					System.out.println("\n Now specify whether the packet you want to test is an ack or a data packet\n"
 							+ "0-Ack, 1-data");
 					input=br.readLine();
@@ -77,7 +80,8 @@ public class ErrorSimulatorUI {
 						
 						}
 					results.add(i);
-					}	
+					}
+					}
 				}else{
 					System.out.println("Command not recognized. Please try again.");
 				

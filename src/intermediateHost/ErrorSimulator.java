@@ -61,7 +61,7 @@ public class ErrorSimulator {
 	    }
 		try {
 			sendReceiveSocket=new DatagramSocket();
-			
+			 
 			sendToClientSocket= new DatagramSocket();
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
@@ -90,7 +90,9 @@ public class ErrorSimulator {
 				testCode=results.get(0);
 				if(results.size()>1){
 				packetNum=results.get(1);
+				if(results.size()>2){
 				AckData=results.get(2);
+				}
 				}
 				 receiveRequest();
 					if(testCode==1 && packetNum==0){
@@ -98,20 +100,38 @@ public class ErrorSimulator {
 						sendRequest(null);
 						
 					}else if(testCode==2 && packetNum==0){
-						delReq=receivePacket;
+						delReq=clientPacket;
 						timer=(int)System.currentTimeMillis();
 						receiveRequest();
 						sendRequest(null);
 						
 					}else if (testCode==3 && packetNum==0){
 						sendRequest(null);
-						dupReq=receivePacket;
+						dupReq=clientPacket;
 						timer=(int)System.currentTimeMillis();
-					}else {
+					}else if(testCode==4){
+						DatagramPacket errorPacket=clientPacket;
+						errorPacket.getData()[1]=9;
+						sendRequest(errorPacket);
+						
+					}else if(testCode==6){
+						int i=Utility.getFirstZero(clientPacket.getData());
+						byte arr[]=new byte[clientPacket.getLength()-i];
+						System.arraycopy(clientPacket.getData(),i+1, arr,0,clientPacket.getLength()-i-1);
+						int j=Utility.getFirstZero(arr);
+						//System.out.println(new String(clientPacket.getData(),j+2,1));
+						clientPacket.getData()[j+2]=11;
+						sendRequest(null);
+					}else if(testCode==9){
+						int i=Utility.getFirstZero(clientPacket.getData());
+						clientPacket.getData()[i]=1;
+						sendRequest(null);
+					
+					}else {	
 						sendRequest(null);
 						request=clientPacket;
 					}
-		    	 
+					
 		      		
 		    	  
 		    	  clientPort=clientPacket.getPort();
@@ -157,6 +177,31 @@ public class ErrorSimulator {
 				      			System.out.println("duplicating the Packet");
 				      			duplicated1=receivePacket;
 				      			timer=(int) System.currentTimeMillis();
+				      		}else if (testCode==5 && ((receivePacket.getLength()==4 && AckData==0) ||(receivePacket.getLength()>4 && AckData==1 ))){
+				      			receivePacket.getData()[1]=9;
+				      		}else if(testCode==7 && ((receivePacket.getLength()==4 && AckData==0) ||(receivePacket.getLength()>4 && AckData==1 ))){
+				      			receivePacket.getData()[3]=(byte) (receivePacket.getData()[3]+9);
+				      		}else if(testCode==8 && ((receivePacket.getLength()==4 && AckData==0) ||(receivePacket.getLength()>4 && AckData==1 ))){
+				      			try {
+									DatagramSocket error= new DatagramSocket();
+									try {
+										sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
+												  InetAddress.getLocalHost(), clientPort);
+									} catch (UnknownHostException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+										try {
+											error.send(sendPacket);
+										} catch (IOException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+								} catch (SocketException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+				      			
 				      		}
 				      	}
 				      	if(delayedData1!=null){
@@ -219,7 +264,9 @@ public class ErrorSimulator {
 				      
 				      //Send packet to client
 				      sendToClient(flagsendClient,null);
-				 
+				      if(receivePacket.getData()[1]==5){
+				    	  return;
+				      }
 				      		receiveFromClient(flagReceiveClient);
 				      		
 				      	 	if(testCode!=0 && counter==packetNum){
@@ -248,6 +295,31 @@ public class ErrorSimulator {
 					      			System.out.println("duplicating the packet");
 					      			duplicated=receiveclientPacket;
 					      			timer=(int) System.currentTimeMillis();
+					      			
+					      		}else if(testCode==5 && ((receiveclientPacket.getLength()==4 && AckData==0) ||(receiveclientPacket.getLength()>4 && AckData==1 )) ){
+					      			receiveclientPacket.getData()[1]=9;
+					      		}else if (testCode==7 && ((receiveclientPacket.getLength()==4 && AckData==0) ||(receiveclientPacket.getLength()>4 && AckData==1 ))){
+					      			receiveclientPacket.getData()[3]=(byte)(receiveclientPacket.getData()[3]+9);
+					      		}else if(testCode==8 && ((receiveclientPacket.getLength()==4 && AckData==0) ||(receiveclientPacket.getLength()>4 && AckData==1 ))){
+					      			try {
+										DatagramSocket error= new DatagramSocket();
+										try {
+											sendPacket = new DatagramPacket(receiveclientPacket.getData(), receiveclientPacket.getLength(),
+													  InetAddress.getLocalHost(),receivePacket.getPort());
+										} catch (UnknownHostException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+											try {
+												error.send(sendPacket);
+											} catch (IOException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+									} catch (SocketException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
 					      			
 					      		}
 					      	}
@@ -342,14 +414,7 @@ public class ErrorSimulator {
 		
 	}
 
-	public static void main( String args[] )
-	{
-		ErrorSimulator e = new ErrorSimulator();
-		//Thread waitingThread=new WaitingThread();
-		//waitingThread.start();
-		
-		e.receiveSendPacket();
-	}
+	
 	private void sendRequest(DatagramPacket delayed) {
 		
 		if(delayed==null){
@@ -465,7 +530,7 @@ public class ErrorSimulator {
 	      // Send the datagram packet to the client via the send socket.
 	      
 	      try {
-	    	  sendToClientSocket = new DatagramSocket();
+	    	 
 	         sendToClientSocket.send(sendPacket);
 	      } catch (IOException e) {
 	         e.printStackTrace();
@@ -549,6 +614,14 @@ public class ErrorSimulator {
 	      // Form a String from the byte array.
 	     String received = new String(data,0,len);   
 	      System.out.println(received + "\n");
+	}
+	public static void main( String args[] )
+	{
+		ErrorSimulator e = new ErrorSimulator();
+		//Thread waitingThread=new WaitingThread();
+		//waitingThread.start();
+		
+		e.receiveSendPacket();
 	}
 	
 	

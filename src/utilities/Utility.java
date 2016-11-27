@@ -55,13 +55,16 @@ public class Utility {
 		
 		
 		  
-		 
-		 	array[3]++;
-		 	//when we reach to -128 we need to add 256 so we can keep counting up
-		 	if(array[3]>=-128 && array[3]<0 && array[2]>0){
-		 		flag=true;
+		 		if(array[3]==-1){
+		 			flag=true;
+		 		}
 		 		
+				array[3]++;
+		 	//when we reach to -128 we need to add 256 so we can keep counting up
+		 	if(array[3]>=-128 && array[3]<0){
+		 		flag=true;
 		 	}
+		 	
 		 	if(flag){
 		 		
 		 		k=array[3]+256;
@@ -80,6 +83,7 @@ public class Utility {
 		 		flag2=true;
 		 	}
 		 	//comment
+		 	
 		 	if(flag2){
 		 		l=(array[2]<<8)+k+65536;
 		 	}else{
@@ -87,7 +91,7 @@ public class Utility {
 			   
 			   l=(array[2]<<8)+k;
 		 	}
-			
+		 	
 			return l;
 		}
 	public static synchronized int getByteInt(byte array[]){
@@ -96,7 +100,7 @@ public class Utility {
 	
 		flag=false;
 		flag2=false;
-		if(array[3]>=-128 && array[3]<0 && array[2]>0){
+		if(array[3]>=-128 && array[3]<0){
 	 		flag=true;
 	 		
 	 	}

@@ -84,6 +84,7 @@ public class Server {
 			for(DatagramPacket pr:previouses){
 				if(checker==0){
 				if(pr.getPort()==receivePacket.getPort() && pr.getLength()==receivePacket.getLength()){
+					System.out.println(pr.getPort());
 					System.out.println("IGNOREEEEE DUPLICATE REQUEST!!!\n\n\n");
 					checker=1;
 				}
