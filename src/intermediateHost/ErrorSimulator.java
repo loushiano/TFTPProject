@@ -46,7 +46,7 @@ public class ErrorSimulator {
 	private DatagramPacket request;
 	private byte[] data1;
 	private DatagramPacket delReq;
-	private int delay=6010;
+	private int delay;
 	private DatagramPacket clientPacket;
 	
 	public ErrorSimulator(){
@@ -92,6 +92,9 @@ public class ErrorSimulator {
 				packetNum=results.get(1);
 				if(results.size()>2){
 				AckData=results.get(2);
+				if(results.size()>3){
+					delay=results.get(3);
+				}
 				}
 				}
 				 receiveRequest();
@@ -235,7 +238,7 @@ public class ErrorSimulator {
 				      	}
 				      	if(delayedData1!=null){
 				      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
-				      	if((timer+5010)<(int)System.currentTimeMillis()){
+				      	if((timer+delay)<(int)System.currentTimeMillis()){
 				      		
 				      		System.out.println("sending the delayed data");
 				      		sendToClient(true,delayedData1);
@@ -246,7 +249,7 @@ public class ErrorSimulator {
 				      	}
 				      	if(delayedAck1!=null){
 				      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
-					      	if((timer+5010)<(int)System.currentTimeMillis()){
+					      	if((timer+delay)<(int)System.currentTimeMillis()){
 					      		System.out.println("sending the delayed Ack");
 					      		sendToClient(true,delayedAck1);
 					      		delayedAck1=null;
@@ -255,7 +258,7 @@ public class ErrorSimulator {
 					      	}
 				      	if(duplicated1!=null){
 				      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
-					      	if((timer+1)<(int)System.currentTimeMillis()){
+					      	if((timer+delay)<(int)System.currentTimeMillis()){
 					      		System.out.println("send the duplicated Packet again");
 					      		sendToClient(true,duplicated1);
 					      		if(duplicated1.getLength()>4){
@@ -268,14 +271,14 @@ public class ErrorSimulator {
 					      	}
 				      	}
 				      	if(dupReq!=null){
-				      		if((timer+5)<(int)System.currentTimeMillis()){
+				      		if((timer+delay)<(int)System.currentTimeMillis()){
 				      		sendRequest(dupReq);
 				      		}
 				      		dupReq=null;
 				      	}
 				      	if(delReq!=null){
 				      		
-				      		if((timer+6010)<(int)System.currentTimeMillis()){
+				      		if((timer+delay)<(int)System.currentTimeMillis()){
 				      			
 					      		sendRequest(delReq);
 					      		}
@@ -293,6 +296,29 @@ public class ErrorSimulator {
 				      
 				      
 				      //Send packet to client
+				      	 if(testCode==8 && AckData==2){
+			      			try {
+								DatagramSocket error= new DatagramSocket();
+								try {
+									sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
+											  InetAddress.getLocalHost(), clientPort);
+								} catch (UnknownHostException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+									try {
+										error.send(sendPacket);
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+							} catch (SocketException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+			      			
+			      		
+			      	}
 				      sendToClient(flagsendClient,null);
 				      if(receivePacket.getData()[1]==5){
 				    	  return;
@@ -307,6 +333,7 @@ public class ErrorSimulator {
 					      		}else if(testCode==1 && receiveclientPacket.getLength()==4 && AckData==0 ){
 					      			System.out.println("Ack packet received from the client is being lost, will wait for another data from the server again");
 					      			flagSendToServer=false;
+					      			
 					      		}else if(testCode==2 && receiveclientPacket.getLength()>4 && AckData==1){
 					      			System.out.println("DATA packet received from the client is being delayed, will wait for another data from the server again");
 					      			 
@@ -395,7 +422,7 @@ public class ErrorSimulator {
 						      	}
 					      	if(duplicated!=null){
 					      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
-						      	if((timer+4)<(int)System.currentTimeMillis()){
+						      	if((timer+delay)<(int)System.currentTimeMillis()){
 						      		System.out.println("send the duplicated Packet again");
 						      		
 						      		sendBackToServer(true,duplicated);

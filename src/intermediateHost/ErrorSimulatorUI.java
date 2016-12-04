@@ -10,6 +10,7 @@ import Clientpackage.Client;
 public class ErrorSimulatorUI {
 	private ArrayList<String> testcodes;
 	private ArrayList<Integer> results;
+	private int testCode;
 	public ArrayList<Integer> run() {
 		BufferedReader br = null;
 		//String mode=Constants.VERBOSE;
@@ -37,6 +38,7 @@ public class ErrorSimulatorUI {
 					flag1=false;
 					int i=Integer.parseInt(input);
 					results.add(i);
+					testCode=i;
 					System.out.println();
 					if(i!=0 && i!=4 && i!=6 && i!=9){
 						if(i==1 || i==2 || i==3){
@@ -65,8 +67,8 @@ public class ErrorSimulatorUI {
 					}else{
 						String s="\n Now specify whether the packet you want to test is an ack or a data packet\n"
 								+ "0-Ack, 1-data";
-						if(i==8){
-							s.concat("2-errorPacket");
+						if(testCode==8){
+							s=s.concat(" 2-errorPacket");
 						}
 					System.out.println(s);
 					input=br.readLine();
@@ -76,7 +78,7 @@ public class ErrorSimulatorUI {
 						try{
 							flag=false;
 							i=Integer.parseInt(input);
-							if(i!=1 && i!=0){
+							if(i!=1 && i!=0 && i!=2){
 								System.out.println("unrecognized entry, please trye agin");
 								input=br.readLine();
 								flag=true;
@@ -89,11 +91,32 @@ public class ErrorSimulatorUI {
 						
 						}
 					results.add(i);
+					
 					}
+					}
+					if(testCode==2 || testCode==3){
+						System.out.println();
+						System.out.println("enter the delay time in milliseconds! note the server time out is 5 seconds and the client timeout is 6 seconds!");
+						input=br.readLine();
+						boolean flag=true;
+						i=0;
+						while(flag){
+							try{
+								flag=false;
+								i=Integer.parseInt(input);
+							}catch(NumberFormatException e){
+								flag=true;
+								System.out.println("unrecognized entry, please trye agin");
+								input=br.readLine();
+							}
+							
+							}
+						
+						results.add(i);
 					}
 				}else{
 					System.out.println("Command not recognized. Please try again.");
-				
+					
 					
 				}
 					}
