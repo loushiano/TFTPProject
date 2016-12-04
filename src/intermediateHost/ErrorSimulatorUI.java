@@ -15,7 +15,7 @@ public class ErrorSimulatorUI {
 		//String mode=Constants.VERBOSE;
 		testcodes=new ArrayList<String>();
 		results=new ArrayList<Integer>();
-		for(int i=0;i<10;i++){
+		for(int i=0;i<11;i++){
 		testcodes.add(i+"");
 		}
 		try{
@@ -26,7 +26,7 @@ public class ErrorSimulatorUI {
 				
 				System.out.println("Enter one of the following numbers to test the file transfer:\n 0-normal mode\n"
 						+ "1-lose packet\n2-delay packet\n3-duplicate packet\n4-send a wrq or rrq with wrong opcode\n"
-						+ "5-send a packet with invalid opcode\n6-invalid mode field\n7- invalid block numbers\n8- packet with unknown TID\n9-invalide request form");
+						+ "5-send a packet with wrong opcode\n6-invalid mode field\n7- invalid block numbers\n8- packet with unknown TID\n9-invalide request form\n10-packet with wrong size");
 				System.out.println();
 				String input = br.readLine();
 				boolean flag1=true;
@@ -39,8 +39,13 @@ public class ErrorSimulatorUI {
 					results.add(i);
 					System.out.println();
 					if(i!=0 && i!=4 && i!=6 && i!=9){
+						if(i==1 || i==2 || i==3){
 					System.out.println("Which packet would you like the test to apply on:\n0 is for RRQ or WRQ an"
-							+ "d 1 and above for acks and datas");
+							+ "d 1 and above for acks and datas");}else {
+								System.out.println("Which packet would you like the test to apply on:\n"
+										+ "1 for first ack or first data and etc..");
+								
+							}
 					input=br.readLine();
 					boolean flag=true;
 					while(flag){
@@ -58,8 +63,12 @@ public class ErrorSimulatorUI {
 					if(i==0){
 						
 					}else{
-					System.out.println("\n Now specify whether the packet you want to test is an ack or a data packet\n"
-							+ "0-Ack, 1-data");
+						String s="\n Now specify whether the packet you want to test is an ack or a data packet\n"
+								+ "0-Ack, 1-data";
+						if(i==8){
+							s.concat("2-errorPacket");
+						}
+					System.out.println(s);
 					input=br.readLine();
 					flag=true;
 					i=0;

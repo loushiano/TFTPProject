@@ -220,7 +220,7 @@ public class ConnectionManager extends Thread {
 						
 						notreceived=receiveAck();
 						if(i==2){
-							System.out.print("it seems like we are not receiving anything from the client, we are going to shut down");
+							System.out.print("it seems like we are not receiving anything from the client, we are going to stop the file transfer");
 							return;
 						}
 						
@@ -550,6 +550,12 @@ public class ConnectionManager extends Thread {
 			putError(error,5,"Server:a packet with an unkown TID has been received we are going to send an error packet to where we received it from",receivePacketACK.getPort());
 			return receiveAck();
 		}
+		if(receivePacketACK.getLength()!=4){
+			byte error[] = new byte[200];
+			putError(error,4,"a packet with a wrong length of ack got received!",PortClient);
+			return -1; 
+			
+		}
 		if(receivePacketACK.getData()[1]!=4){
 			byte error[] = new byte[200];
 			putError(error,4,"a packet with an wrong opcode for acknowledgement got received,the server is going to stop the file transfer",PortClient);
@@ -578,7 +584,7 @@ public class ConnectionManager extends Thread {
 		if(receivePacketDATA.getData()[1]==2){
 			System.out.println("server has received a request again");
 			sendACK();
-			receiveData();
+			return receiveData();
 		}
 		
 
@@ -616,6 +622,12 @@ public class ConnectionManager extends Thread {
 			byte error[] = new byte[200];
 			putError(error,5,"a packet with an unknown TID got received!",receivePacketDATA.getPort());
 			return receiveData();
+			
+		}
+		if(receivePacketDATA.getLength()>516){
+			byte error[] = new byte[200];
+			putError(error,4,"a packet with a wrong length of data got received!",receivePacketDATA.getPort());
+			return -1; 
 			
 		}
 		if(Math.abs((Utility.getByteInt(receivePacketDATA.getData())-previousOpcode))>8){

@@ -54,7 +54,7 @@ public class ClientUI {
 	        String tnMode = Constants.NORMAL;
 
 
-
+	        
 	        try {
 
 	        		

@@ -22,13 +22,14 @@ public class Server {
 	public static String mode=Constants.VERBOSE;
 	public static boolean received=false;
 	public static boolean shutdown;
-	private ArrayList<DatagramPacket> previouses;
+	private ArrayList<Integer> previouses;
+	private int different=0;
 
 
 
 	public Server()
 	{
-		previouses=new ArrayList<DatagramPacket>();
+		previouses=new ArrayList<Integer>();
 		try {
 			// Construct a datagram socket and bind it to any available 
 			// port on the local host machine. This socket will be used to
@@ -65,8 +66,9 @@ public class Server {
 		int i=0;
 		byte data[] = new byte[1400];
 		receivePacket = new DatagramPacket(data, data.length);
+		int checker;
 		while (notShotDown){
-			int checker=0;//to check if we received or not
+			checker=0;//to check if we received or not
 			
 				
 				
@@ -81,11 +83,10 @@ public class Server {
 				checker=1;
 			}
 			
-			for(DatagramPacket pr:previouses){
+			for(Integer pr:previouses){
 				if(checker==0){
-				if(pr.getPort()==receivePacket.getPort() && pr.getLength()==receivePacket.getLength()){
-					System.out.println(pr.getPort());
-					System.out.println("IGNOREEEEE DUPLICATE REQUEST!!!\n\n\n");
+				if(pr ==receivePacket.getPort()){
+					System.out.println("THE SERVER HAS RECEIVED A DUPLICATED REQUEST.IGNOREEEEE DUPLICATED REQUEST!!!\n\n\n");
 					checker=1;
 				}
 				}
@@ -95,13 +96,15 @@ public class Server {
 			
 			if(receivePacket.getPort()!=-1){
 				
-			previouses.add(receivePacket);
+			previouses.add(receivePacket.getPort());
 			}
 			
 			if(checker==0){
-			ConnectionManager connectionManagerThread = new ConnectionManager( receivePacket,receivePacket.getData(),getPath(receivePacket.getData()),mode);
+				DatagramPacket packet =new DatagramPacket(receivePacket.getData(),receivePacket.getLength(),receivePacket.getAddress(),receivePacket.getPort());
+			ConnectionManager connectionManagerThread = new ConnectionManager( packet,packet.getData(),getPath(receivePacket.getData()),mode);
 			connectionManagerThread.start();
-			receivePacket = new DatagramPacket(data, data.length);
+			
+			
 			}else{
 				
 			}

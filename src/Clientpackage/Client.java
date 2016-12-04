@@ -364,6 +364,16 @@ public class Client {
 			}
 			
 				serverPort=receivePacketACK.getPort();
+				
+					
+				
+				if(previousACKs.size()<=20){
+					previousACKs.add(Utility.getByteInt(receivePacketACK.getData()));
+				}else{
+					previousACKs.remove(0);
+					previousACKs.add(Utility.getByteInt(receivePacketACK.getData()));
+				}
+				
 			
 			
 			
@@ -619,6 +629,10 @@ public class Client {
 													// an error.
 			return -1;
 		}
+		if(receivePacketACK.getLength()>4){
+			System.out.println("the received ack is of wrong size! the client is goint to end");
+			return -1;
+		}
 
 		// if there is no error in ACK, we initialize the
 		// previousACk to the new ACK
@@ -675,18 +689,25 @@ public class Client {
 			
 		} catch (IOException e) {
 			if(e instanceof SocketTimeoutException && i==0){
+				System.out.println("the client timed out while waiting for a respond! it is going to retransmit the request");
 				sendRequest();
 				numbers++;
 				if(numbers==2){
 					System.out.println("it seems like we are not responding from the server anymore!! we are going to quit");
 					return -1;
 				}
-				receiveData();
+				return receiveData();
 				
 			}
 			else{
-				receiveData();
+				
+				return receiveData();
 			}
+		}
+		if(receivePacket.getLength()>516){
+			System.out.println("the received data is of wrong size! the client is goint to end");
+			return -1;
+			
 		}
 		if(i==0){
 			serverPort=receivePacket.getPort();
