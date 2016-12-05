@@ -32,7 +32,7 @@ public class ErrorSimulator {
 	private int clientPort;
 	private boolean flag;
 	byte data[]=null;
-	
+		
 	private int counter=0;
 	private DatagramPacket receiveclientPacket;
 	private boolean flagsendClient,flagReceiveClient;
@@ -216,6 +216,30 @@ public class ErrorSimulator {
 								}
 				      			
 				      		
+				      	} else if (testCode==8 && AckData==2){
+				      		 if(testCode==8 && AckData==2){
+					      			try {
+										DatagramSocket error= new DatagramSocket();
+										try {
+											sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
+													  InetAddress.getLocalHost(), clientPort);
+										} catch (UnknownHostException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+											try {
+												error.send(sendPacket);
+											} catch (IOException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+									} catch (SocketException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+					      			
+					      		
+					      	}
 				      	}else if(testCode==10){
 				      		if(receivePacket.getLength()==4){
 				      			byte wrongAck[]=new byte[5];
@@ -296,29 +320,7 @@ public class ErrorSimulator {
 				      
 				      
 				      //Send packet to client
-				      	 if(testCode==8 && AckData==2){
-			      			try {
-								DatagramSocket error= new DatagramSocket();
-								try {
-									sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
-											  InetAddress.getLocalHost(), clientPort);
-								} catch (UnknownHostException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-									try {
-										error.send(sendPacket);
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-							} catch (SocketException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-			      			
-			      		
-			      	}
+				      	
 				      sendToClient(flagsendClient,null);
 				      if(receivePacket.getData()[1]==5){
 				    	  return;

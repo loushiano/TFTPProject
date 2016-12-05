@@ -516,9 +516,9 @@ public class Client {
 		
 	}
 
-	public boolean checkError(byte[] error) {
+	public boolean checkError(byte[] error,int port) {
 
-		if (error[0] == 0 & error[1] == 5) {
+		if (error[0] == 0 & error[1] == 5 && port==serverPort) {
 
 			errorType[0] = error[2];
 
@@ -527,7 +527,7 @@ public class Client {
 			return true;
 
 		}
-
+		
 		return false;
 
 	}
@@ -623,7 +623,12 @@ public class Client {
 		}
 			
 		k++;
-		if (checkError(receivePacketACK.getData())) {
+		if (checkError(receivePacketACK.getData(),receivePacketACK.getPort())) {
+			if(receivePacketACK.getPort()!=serverPort){
+				
+					System.out.println("an error packet form an unknow TID got received, we are going to ignore it");
+					return receiveAck();
+			}
 			System.out.println();
 			printError(receivePacketACK.getData(),receivePacketACK.getLength()); // yes there is
 													// an error.
@@ -715,7 +720,12 @@ public class Client {
 		i++;
 		System.out.println();
 		// check if there is an error
-		if (checkError(receivePacket.getData())) {
+		if (checkError(receivePacket.getData(),receivePacket.getPort())) {
+			if(receivePacket.getPort()!=serverPort){
+				
+					System.out.println("an error packet form an unknow TID got received, we are going to ignore it");
+				return receiveData();
+			}
 			System.out.println();
 			printError(receivePacket.getData(),receivePacket.getLength()); // yes there is an
 			return -1;
