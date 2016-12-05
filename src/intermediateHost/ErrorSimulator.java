@@ -237,7 +237,7 @@ public class ErrorSimulator {
 				      	}
 				      	}
 				      	if(delayedData1!=null){
-				      		System.out.println(""+timer+ " " +(int)System.currentTimeMillis());
+				      		
 				      	if((timer+delay)<(int)System.currentTimeMillis()){
 				      		
 				      		System.out.println("sending the delayed data");
@@ -582,7 +582,7 @@ public class ErrorSimulator {
 			}else{
 				
 					sendPacket=new DatagramPacket(delayed.getData(), delayed.getLength(),
-							  receivePacket.getAddress(), clientPort);
+							  clientHost, clientPort);
 				
 			}
 	      System.out.println( "IntermediateHost: Sending packet:");

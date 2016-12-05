@@ -232,6 +232,13 @@ public class Client {
 					e.printStackTrace();
 				}
 			}
+			try {
+				sendReceiveSocket.setSoTimeout(6000);
+			} catch (SocketException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			
 		sendRequest();
 
 		// now after sending the request we need to get back either data or
@@ -283,12 +290,6 @@ public class Client {
 				e1.printStackTrace();
 			}
 			
-			try {
-				sendReceiveSocket.setSoTimeout(6000);
-			} catch (SocketException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
 			
 		
 			// ************************************************************************************************************************************************************************************************************************
