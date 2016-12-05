@@ -187,11 +187,12 @@ public class ConnectionManager extends Thread {
 					 * We just read "n" bytes into array data. Now write them to
 					 * the output file.
 					 */
-					if (!Utility.containsAzero(data1, 0, 512)) {
+					System.arraycopy(data1, 0, responseData, 4, 512);
+					if (!Utility.containsAzero(data1, 0, data1.length)) {
 						// if we enter this condition it means that data1
 						// doesn't contain a zero
 						flag3 = false;
-						System.arraycopy(data1, 0, responseData, 4, data1.length);
+						
 					} else {
 						// if data contains zero it means it is the last set of
 						// bytes we need to transefer so we have to create a
@@ -638,7 +639,7 @@ public class ConnectionManager extends Thread {
 		
 		previousOpcode=Utility.getByteInt(receivePacketDATA.getData());
 		
-		if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1) && !Utility.containsAzero(receivePacketDATA.getData(), 4, 516)){
+		if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1) && !Utility.containsAzero(receivePacketDATA.getData(), 4, receivePacket.getLength())){
 			//System.out.println(Utility.getByteInt(opblock)+" "+Utility.getByteInt(opblock1));
 		try {
 			out.write(receivePacketDATA.getData(), 4, receivePacketDATA.getLength() - 4);

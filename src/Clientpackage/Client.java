@@ -814,8 +814,8 @@ public class Client {
 	ACK[3] = receivePacket.getData()[3];
 
 	// Here we will start writing to the file.
-	if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1) && !Utility.containsAzero(receivePacket.getData(), 4, 516)){
-		System.out.println(" "+Utility.getByteInt(opblock)+ " "+Utility.getByteInt(opblock1));
+	if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1) && !Utility.containsAzero(receivePacket.getData(), 4,receivePacket.getLength())){
+		
 		
 	try {
 
