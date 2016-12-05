@@ -562,7 +562,7 @@ public class ConnectionManager extends Thread {
 			return -1;
 			
 		}
-			if(Math.abs((Utility.getByteInt(receivePacketACK.getData())-previousOpcode))>8){
+			if((Utility.getByteInt(receivePacketACK.getData())-previousOpcode)>8){
 				byte error[] = new byte[200];
 				putError(error,4,"a packet with an invalid ack block number got received",PortClient);
 				return -1;
@@ -630,7 +630,7 @@ public class ConnectionManager extends Thread {
 			return -1; 
 			
 		}
-		if(Math.abs((Utility.getByteInt(receivePacketDATA.getData())-previousOpcode))>8){
+		if((Utility.getByteInt(receivePacketDATA.getData())-previousOpcode)>8){
 			byte error[] = new byte[100];
 			putError(error,4,"a packet with an invalid blockNumber got received in the server side!",PortClient);
 			return -1;
@@ -649,7 +649,9 @@ public class ConnectionManager extends Thread {
 			return -1;
 		}
 		}else{
+			if(!Utility.containsAzero(receivePacketDATA.getData(), 4, 516)){
 			System.out.println("A data packet that we received beofre,has been sent to us again:IGNORED!!");
+			}
 		}
 			return 0;
 	}

@@ -312,6 +312,8 @@ public class Client {
 				
 				}
 			
+				System.out.println("we are done with the transfering, you can enter a new command!");
+			
 
 			try {
 
@@ -319,7 +321,7 @@ public class Client {
 
 			} catch (IOException e) {
 
-				System.out.println("at the end of the writing the memory limist was exeeded");
+				
 				return;
 
 			}
@@ -388,6 +390,20 @@ public class Client {
 					 * the output file.
 					 */
 					System.arraycopy(data1, 0, sendingData, 4, data1.length);
+					// this will check for us if the last data transfer is full,
+					// we send a byte of zeros to the server.
+					if (!Utility.containsAzero(data1, 0, 512)) {
+						// if we enter this condition it means that data1
+						// doesn't contain a zero
+						flag3 = false;
+					} else {
+						flag3 = true;
+						int k = Utility.getFirstZero(data1);
+						byte copyArray[] = sendingData;
+						sendingData = new byte[k + 4];
+						System.arraycopy(copyArray, 0, sendingData, 0, 4);
+						System.arraycopy(data1, 0, sendingData, 4, k);
+					}
 					sendData(1);
 
 					
@@ -441,6 +457,7 @@ public class Client {
 			// if flag3 is set to false it means that the last data transfered
 			// are exactly 512 byte
 			if (!flag3) {
+				
 				System.arraycopy(data1, 0, sendingData, 4, data1.length);
 					sendData(1);
 				// 23333333333333333333333333333333333333333333333333333333333333333333
@@ -452,7 +469,7 @@ public class Client {
 					sendData(c);
 					c=receiveAck();
 				}
-				
+				System.out.print("we are done from the transferring you can enter a new command!");
 			}
 		}
 
@@ -554,20 +571,8 @@ public class Client {
 	private void sendData(int check){
 		
 		
-		// this will check for us if the last data transfer is full,
-		// we send a byte of zeros to the server.
-		if (!Utility.containsAzero(data1, 0, 512)) {
-			// if we enter this condition it means that data1
-			// doesn't contain a zero
-			flag3 = false;
-		} else {
-			flag3 = true;
-			int k = Utility.getFirstZero(data1);
-			byte copyArray[] = sendingData;
-			sendingData = new byte[k + 4];
-			System.arraycopy(copyArray, 0, sendingData, 0, 4);
-			System.arraycopy(data1, 0, sendingData, 4, k);
-		}
+		
+		
 		sendPacket = new DatagramPacket(sendingData, sendingData.length, receivePacketACK.getAddress(),
 				receivePacketACK.getPort());
 		// sending data to the server
@@ -675,7 +680,7 @@ public class Client {
 			return -1;
 			
 		}
-			if(Math.abs((Utility.getByteInt(receivePacketACK.getData())-previousOpcode))>8){
+			if((Utility.getByteInt(receivePacketACK.getData())-previousOpcode)>8){
 				
 				System.out.println("a packet with an invalid ack block number got received.Client is going to stop the file transfering\n"
 						+ "you can enter a new commad :)\n");
@@ -795,7 +800,7 @@ public class Client {
 			return -1;
 			
 		}
-			if(Math.abs((Utility.getByteInt(receivePacket.getData())-previousOpcode))>8){
+			if((Utility.getByteInt(receivePacket.getData())-previousOpcode)>8){
 				
 				System.out.println("a packet with an invalid data block number got received.Client is going to stop the file transfering\n"
 						+ "you can enter a new commad :)\n");
@@ -824,8 +829,11 @@ public class Client {
 
 	}
 	}else{
+		if(!Utility.containsAzero(receivePacket.getData(), 4, 516)){
 		System.out.println("a data packet that already got received was received again, the client will ignore it");
-	}
+		}
+		}
+	
 	return 0;
 	}
 	public void sendACK(){

@@ -214,33 +214,9 @@ public class ErrorSimulator {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
-				      			
+				      			System.out.println("a packet with an Unknown TID is being sent to the client!");
 				      		
-				      	} else if (testCode==8 && AckData==2){
-				      		 if(testCode==8 && AckData==2){
-					      			try {
-										DatagramSocket error= new DatagramSocket();
-										try {
-											sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
-													  InetAddress.getLocalHost(), clientPort);
-										} catch (UnknownHostException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-											try {
-												error.send(sendPacket);
-											} catch (IOException e) {
-												// TODO Auto-generated catch block
-												e.printStackTrace();
-											}
-									} catch (SocketException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-					      			
-					      		
-					      	}
-				      	}else if(testCode==10){
+				      	} else if(testCode==10){
 				      		if(receivePacket.getLength()==4){
 				      			byte wrongAck[]=new byte[5];
 				      			System.arraycopy(receivePacket.getData(), 0,wrongAck,0,4);
@@ -320,8 +296,33 @@ public class ErrorSimulator {
 				      
 				      
 				      //Send packet to client
-				      	
+				      	 if (testCode==8 && AckData==2 && receivePacket.getData()[1]==5){
+				      		 
+					      			try {
+										DatagramSocket error= new DatagramSocket();
+										try {
+											sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
+													  InetAddress.getLocalHost(), clientPort);
+										} catch (UnknownHostException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+											try {
+												error.send(sendPacket);
+											} catch (IOException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+									} catch (SocketException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+					      			
+					      		System.out.println("an error packet of wrong TID is being set to the Client!");
+					      	
+				      	}	
 				      sendToClient(flagsendClient,null);
+				      
 				      if(receivePacket.getData()[1]==5){
 				    	  return;
 				      }
@@ -379,7 +380,7 @@ public class ErrorSimulator {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
-					      			
+					      			System.out.println("a packet with an Unknown TID is being sent to the client!");
 					      		}else if(testCode==10){
 						      		if(receiveclientPacket.getLength()==4){
 						      			byte wrongAck[]=new byte[5];
