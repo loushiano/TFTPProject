@@ -48,7 +48,7 @@ public class ErrorSimulator {
 	private DatagramPacket delReq;
 	private int delay;
 	private DatagramPacket clientPacket;
-	
+	private InetAddress clientHost;
 	public ErrorSimulator(){
 		
 		try {
@@ -138,7 +138,7 @@ public class ErrorSimulator {
 		      		
 		    	  
 		    	  clientPort=clientPacket.getPort();
-		      		
+		    	  clientHost=clientPacket.getAddress();
 					
 			      flag=true;
 			      start:
@@ -300,13 +300,10 @@ public class ErrorSimulator {
 				      		 
 					      			try {
 										DatagramSocket error= new DatagramSocket();
-										try {
+										
 											sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
-													  InetAddress.getLocalHost(), clientPort);
-										} catch (UnknownHostException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
+													  clientHost, clientPort);
+										
 											try {
 												error.send(sendPacket);
 											} catch (IOException e) {
@@ -365,7 +362,7 @@ public class ErrorSimulator {
 										DatagramSocket error= new DatagramSocket();
 										
 											sendPacket = new DatagramPacket(receiveclientPacket.getData(), receiveclientPacket.getLength(),
-													  receiveclientPacket.getAddress(),receivePacket.getPort());
+													  receivePacket.getAddress(),receivePacket.getPort());
 										
 											try {
 												error.send(sendPacket);
@@ -580,7 +577,7 @@ public class ErrorSimulator {
 			if(delayed==null){
 		
 			sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
-					  receiveclientPacket.getAddress(), clientPort);
+					  clientHost, clientPort);
 		
 			}else{
 				
