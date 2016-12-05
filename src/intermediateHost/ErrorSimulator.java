@@ -363,13 +363,10 @@ public class ErrorSimulator {
 					      		}else if(testCode==8 && ((receiveclientPacket.getLength()==4 && AckData==0) ||(receiveclientPacket.getLength()>4 && AckData==1 ))){
 					      			try {
 										DatagramSocket error= new DatagramSocket();
-										try {
+										
 											sendPacket = new DatagramPacket(receiveclientPacket.getData(), receiveclientPacket.getLength(),
-													  InetAddress.getLocalHost(),receivePacket.getPort());
-										} catch (UnknownHostException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
+													  receiveclientPacket.getAddress(),receivePacket.getPort());
+										
 											try {
 												error.send(sendPacket);
 											} catch (IOException e) {
@@ -583,7 +580,7 @@ public class ErrorSimulator {
 			if(delayed==null){
 		
 			sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
-					  receivePacket.getAddress(), clientPort);
+					  receiveclientPacket.getAddress(), clientPort);
 		
 			}else{
 				

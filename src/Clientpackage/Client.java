@@ -489,9 +489,7 @@ public class Client {
 
 			sendPacket = new DatagramPacket(request, request.length,
 
-					localHost, portNum);// we put 69 because we
-															// do not have host
-															// now
+					localHost, portNum);
 
 		// printing the info if its verbose mode
 
