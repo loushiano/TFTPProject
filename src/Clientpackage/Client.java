@@ -68,6 +68,8 @@ public class Client {
 
 	private int k;
 
+	private ArrayList<Integer> previousOpcodes;
+
 	public Client()
 
 	{
@@ -75,7 +77,7 @@ public class Client {
 		previousACK = new byte[4];
 		previousDATA = new byte[516];
 		previousACKs =new ArrayList<Integer>();
-
+		previousOpcodes= new ArrayList<Integer>();
 		try {
 
 			// Construct a datagram socket and bind it to any available
@@ -625,7 +627,10 @@ public class Client {
 				return 0;
 			}
 		}
-			
+		if(i==0){
+			serverPort=receivePacketACK.getPort();
+		}
+		i++;	
 		k++;
 		if (checkError(receivePacketACK.getData(),receivePacketACK.getPort())) {
 			if(receivePacketACK.getPort()!=serverPort){
@@ -710,7 +715,8 @@ public class Client {
 			}
 			else{
 				
-				return receiveData();
+				System.out.println("the client is not receiving anything from the server anymore it is going to stop the file transfer!");
+				return -1;
 			}
 		}
 		if(receivePacket.getLength()>516){
@@ -777,7 +783,7 @@ public class Client {
 
 		System.arraycopy(receivePacket.getData(), 0, opblock, 0, 4);
 		System.arraycopy(previousDATA, 0, opblock1, 0, 4);
-
+		previousOpcodes.add(Utility.getByteInt(opblock1));
 		System.out.print("Containing Bytes: ");
 
 		System.out.println("opcode: " + Arrays.toString(Utility.getBytes(receivePacket.getData(), 0, 2)));
@@ -813,7 +819,7 @@ public class Client {
 	ACK[3] = receivePacket.getData()[3];
 
 	// Here we will start writing to the file.
-	if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1) && !Utility.containsAzero(receivePacket.getData(), 4,receivePacket.getLength())){
+	if(!previousOpcodes.contains(Utility.getByteInt(opblock)) && !Utility.containsAzero(receivePacket.getData(), 4,receivePacket.getLength())){
 		
 		
 	try {
@@ -828,9 +834,9 @@ public class Client {
 
 	}
 	}else{
-		if(!Utility.containsAzero(receivePacket.getData(), 4, 516)){
+		
 		System.out.println("a data packet that already got received was received again, the client will ignore it");
-		}
+		
 		}
 	
 	return 0;

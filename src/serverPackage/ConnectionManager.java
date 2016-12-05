@@ -54,6 +54,7 @@ public class ConnectionManager extends Thread {
 	private int PortClient;
 	private int previousOpcode;
 	private BufferedOutputStream  out;
+	private ArrayList<Integer> previousOpcodes;
 	public ConnectionManager(DatagramPacket receivedPacket, byte[] data, String filepath, String mode) {
 		this.receivePacket = receivedPacket;
 		previousACKs=new  ArrayList<Integer>();
@@ -72,6 +73,7 @@ public class ConnectionManager extends Thread {
 		previousDATA = new byte[516];
 		opblock1=new byte[4];
 		PortClient=receivedPacket.getPort();
+		previousOpcodes =new ArrayList<Integer>();
 	}
 
 	public void run() {
@@ -596,7 +598,7 @@ public class ConnectionManager extends Thread {
 			flag = false;
 		}
 		System.out.println("Server: Data received:");
-		if (mode.equals(Constants.VERBOSE))
+		if (mode.equals(Constants.VERBOSE)){
 			
 		System.out.println("From host: " + receivePacketDATA.getAddress());
 		System.out.println("Host port: " + receivePacketDATA.getPort());
@@ -609,11 +611,13 @@ public class ConnectionManager extends Thread {
 		System.out.println(received1 + "\n");
 		System.out.print("Containing Bytes: ");
 		System.out.println("opcode: " + Arrays.toString(Utility.getBytes(receivePacketDATA.getData(), 0, 2)));
+		}
 		System.arraycopy(receivePacketDATA.getData(), 0, opblock, 0, 4);
 		System.out.println("block#: " + Utility.getByteInt(opblock));
 		System.out.println("data: " + Arrays.toString(Utility.getBytes(receivePacketDATA.getData(), 4, len)));
 		System.arraycopy(receivePacketDATA.getData(), 0, opblock, 0, 4);
 		System.arraycopy(previousDATA, 0, opblock1, 0, 4);
+		previousOpcodes.add(Utility.getByteInt(opblock1));
 		if(receivePacketDATA.getData()[1]!=3){
 			byte error[] = new byte[200];
 			putError(error,4,"a packet with an wrong opcode for data got received,the server is going to stop the file transfer",PortClient);
@@ -639,7 +643,7 @@ public class ConnectionManager extends Thread {
 		
 		previousOpcode=Utility.getByteInt(receivePacketDATA.getData());
 		
-		if(Utility.getByteInt(opblock)!=Utility.getByteInt(opblock1) && !Utility.containsAzero(receivePacketDATA.getData(), 4, receivePacket.getLength())){
+		if(!previousOpcodes.contains(Utility.getByteInt(opblock)) && !Utility.containsAzero(receivePacketDATA.getData(), 4, receivePacket.getLength())){
 			//System.out.println(Utility.getByteInt(opblock)+" "+Utility.getByteInt(opblock1));
 		try {
 			out.write(receivePacketDATA.getData(), 4, receivePacketDATA.getLength() - 4);
@@ -650,9 +654,9 @@ public class ConnectionManager extends Thread {
 			return -1;
 		}
 		}else{
-			if(!Utility.containsAzero(receivePacketDATA.getData(), 4, 516)){
+			
 			System.out.println("A data packet that we received beofre,has been sent to us again:IGNORED!!");
-			}
+			
 		}
 			return 0;
 	}

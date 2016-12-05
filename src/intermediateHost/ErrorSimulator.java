@@ -167,24 +167,26 @@ public class ErrorSimulator {
 				      				
 				      			}
 				      		}else if(testCode==2 && receivePacket.getLength()>4 && AckData==1){
+				      			if(delay>5000){
 				      			System.out.println("the data packet received will be delayed");
 				      			 delayedData1=receivePacket;
 				      			 timer=(int) System.currentTimeMillis();
 				      			 flag=true;
 				      			continue start;
-				      			
+				      			}
 				      		}else if(testCode==2 && receivePacket.getLength()==4 && AckData==0){
+				      			if(delay>5000){
 				      			System.out.println("ACK packet received from the server is being DELAYED, will wait for another data again");
+				      			timer=(int) System.currentTimeMillis();
+				      			delayedAck1=receivePacket;
 				      			if(counter>1){
 					      			flagsendClient=false;flagReceiveClient=true;
-					      			timer=(int) System.currentTimeMillis();
-					      			delayedAck1=receivePacket;
 					      			}else{
 					      				receiveRequest();
 					      				sendBackToServer(true,request);
 					      				continue start;	
 					      			}
-				      			
+				      			}
 				      		}else if(testCode==3 && ((receivePacket.getLength()==4 && AckData==0) ||(receivePacket.getLength()>4 && AckData==1 ))){
 				      			
 				      			System.out.println("duplicating the Packet");
@@ -335,12 +337,15 @@ public class ErrorSimulator {
 					      			flagSendToServer=false;
 					      			
 					      		}else if(testCode==2 && receiveclientPacket.getLength()>4 && AckData==1){
+					      			if(delay>6000){
 					      			System.out.println("DATA packet received from the client is being delayed, will wait for another data from the server again");
 					      			 
 					      			 timer=(int) System.currentTimeMillis();
 					      			 receiveFromClient(true);
 					      			delayedData=receiveclientPacket;
+					      			}
 					      		}else if(testCode==2 && receiveclientPacket.getLength()==4 && AckData==0){
+					      			if(delay>6000){
 					      			System.out.println("Ack packet received from the client is being delayed, will wait for another data from the server again");
 					      			flagSendToServer=false; 
 					      			timer=(int) System.currentTimeMillis();
@@ -348,6 +353,7 @@ public class ErrorSimulator {
 					      				flagSendToServer=true;
 					      			}
 					      			delayedAck=receiveclientPacket;
+					      			}
 					      		}else if(testCode==3 && ((receiveclientPacket.getLength()==4 && AckData==0) ||(receiveclientPacket.getLength()>4 && AckData==1 ))){
 					      			System.out.println("duplicating the packet");
 					      			duplicated=receiveclientPacket;

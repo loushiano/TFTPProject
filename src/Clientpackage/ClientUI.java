@@ -38,6 +38,7 @@ public class ClientUI {
 	 private static boolean flag;
 	private static boolean flag2;
 	private static String IP;
+	private static int counter;
 
 	public static void main(String[] args) {
 
@@ -254,9 +255,9 @@ public class ClientUI {
 		                	input = br.readLine();
 
 	                	}
-
+	                	
 	                	tnMode = input;
-
+	                	if(counter==0){
 	                	System.out.println();
 	                	System.out.print("if the server is on the same machine type in 0,if not type the IP address of the server ");
 
@@ -265,7 +266,8 @@ public class ClientUI {
 	               
 
 	                	IP = input;
-
+	                	}
+	                	counter++;
 	            
 
 	                	Thread thread =new Thread(new ClientThread(requestType, filePath,filewritepath,filePath2, vqMode, tnMode,IP));
@@ -307,12 +309,19 @@ public class ClientUI {
 
 	                		}catch(FileNotFoundException e ){
 
-	                			
+	                			if(e.getMessage().contains("Access")){
+	                				System.out.println("File Access denied");
+
+		                			System.out.println("Please enter another file path");
+		                				j=1;
+	                				
+	                			}else{
 
 	                			System.out.println("File Not Found");
 
 	                			System.out.println("Please enter the correct file path");
 	                				j=1;
+	                			}
 	                		}
 	                		if(j==0){
 	                			flag2=false;
@@ -381,6 +390,7 @@ public class ClientUI {
 	                	}
 
 	                	tnMode = input;
+	                	if(counter==0){
 
 	                	System.out.println();
 	                	System.out.print("if the server is on the same machine type in 0,if not type the IP address of the server ");
@@ -390,8 +400,8 @@ public class ClientUI {
 	         
 
 	                	IP = input;
-
-
+	                	}
+	                	counter++;
 	                	
 
 	                	filePath2=null;
